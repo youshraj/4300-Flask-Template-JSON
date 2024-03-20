@@ -1,5 +1,6 @@
 import wikipediaapi
 import requests
+import csv
 
 celeb_to_summary_dict = {}
 celeb_to_imgs_dict = {}
@@ -37,21 +38,30 @@ def read_celeb_names_from_file(file_path):
         celeb_names = [line.strip() for line in file]
     return celeb_names
 
+def write_to_csv(celeb_data, file_path):
+    with open(file_path, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Celebrity Name', 'Wikipedia Summary'])
+        for celeb_name, data in celeb_data.items():
+            writer.writerow([celeb_name, data['summary']])
+
 celeb_names_file = "4300-Flask-Template-JSON/backend/celeb_input.txt"  # Path to the text file containing celebrity names
 celeb_names = read_celeb_names_from_file(celeb_names_file)
 for celeb_name in celeb_names:
     summary = get_celeb_info(celeb_name)
     url = get_celeb_url(celeb_name)
     if summary:
-        celeb_to_summary_dict[celeb_name] = summary
+        celeb_to_summary_dict[celeb_name] = {'summary': summary}
         # print(f"{celeb_name} Summary:")
         # print(summary)
     else:
         print(f"No summary for {celeb_name} on Wikipedia.")
     if url:
-        celeb_to_imgs_dict[celeb_name] = url
+        celeb_to_summary_dict[celeb_name]['image'] = url
     else:
         print(f"No image for {celeb_name} on Wikipedia")
-print(celeb_to_summary_dict)
-# print(celeb_to_imgs_dict)
 
+csv_file_path = "4300-Flask-Template-JSON/backend/celeb_info.csv"
+write_to_csv(celeb_to_summary_dict, csv_file_path)
+
+print("Data written to CSV successfully!")
