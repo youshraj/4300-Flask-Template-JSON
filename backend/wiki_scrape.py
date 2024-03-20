@@ -32,8 +32,13 @@ def get_celeb_url(celeb_name):
 
     return None
 
+def read_celeb_names_from_file(file_path):
+    with open(file_path, 'r') as file:
+        celeb_names = [line.strip() for line in file]
+    return celeb_names
 
-celeb_names = ["Tom Hanks", "Ariana Grande"] #expand to 1000 names
+celeb_names_file = "4300-Flask-Template-JSON/backend/celeb_input.txt"  # Path to the text file containing celebrity names
+celeb_names = read_celeb_names_from_file(celeb_names_file)
 for celeb_name in celeb_names:
     summary = get_celeb_info(celeb_name)
     url = get_celeb_url(celeb_name)
@@ -47,5 +52,6 @@ for celeb_name in celeb_names:
         celeb_to_imgs_dict[celeb_name] = url
     else:
         print(f"No image for {celeb_name} on Wikipedia")
-#print(celeb_to_summary_dict)
-#print(celeb_to_imgs_dict)
+print(celeb_to_summary_dict)
+# print(celeb_to_imgs_dict)
+
