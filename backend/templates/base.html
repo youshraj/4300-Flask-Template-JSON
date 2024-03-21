@@ -15,7 +15,7 @@
             </div>
             <div class="input-box" onclick="sendFocus()">
                 <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for a Keeping up with the Kardashians episode" id="filter-text-val" onkeyup="filterText()">
+                <input placeholder="Search for your celebrity matches" id="filter-text-val" onkeyup="filterText()">
             </div>
         </div>
         <div id="answer-box">
@@ -24,32 +24,29 @@
     </div>
 
     <script>
-
-        function answerBoxTemplate(title,titleDesc,rating){
-            return `<div class=''>
-                <h3 class='episode-title'>${title}</h3>
-                <p class='episode-desc'>${titleDesc}</p>
-                <p class='episode-rating'>IMDB Rating: ${rating}</p>
-            </div>`
+        function answerBoxTemplate(name, description){
+            return `<div class='actor-info'>
+                    <h3 class='actor-name'>${name}</h3>
+                    <p class='actor-desc'>${description}</p>
+                </div>`
         }
-
+    
         function sendFocus(){
-            document.getElementById('filter-text-val').focus()
+            document.getElementById('filter-text-val').focus();
         }
-
+    
         function filterText(){
-            document.getElementById("answer-box").innerHTML = ""
-            console.log(document.getElementById("filter-text-val").value)
-            fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
+            document.getElementById("answer-box").innerHTML = "";
+            const query = document.getElementById("filter-text-val").value;
+            fetch("/actors?" + new URLSearchParams({ query: query }).toString())
             .then((response) => response.json())
-            .then((data) => data.forEach(row => {
-                
-                let tempDiv = document.createElement("div")
-                tempDiv.innerHTML = answerBoxTemplate(row.title,row.descr,row.imdb_rating)
-                document.getElementById("answer-box").appendChild(tempDiv)
-            }));
-
+            .then((data) => {
+                data.forEach(row => {
+                    let tempDiv = document.createElement("div");
+                    tempDiv.innerHTML = answerBoxTemplate(row['Celebrity Name'], row['Wikipedia Summary']);
+                    document.getElementById("answer-box").appendChild(tempDiv);
+                });
+            });
         }
-            
     </script>
 </body>

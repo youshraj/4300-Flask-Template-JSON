@@ -4,6 +4,7 @@ from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
+import Levenshtein as lev
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -24,6 +25,45 @@ with open(json_file_path, 'r') as file:
 app = Flask(__name__)
 CORS(app)
 
+# load actors database
+def load_actors_database():
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    csv_file_path = os.path.join(current_directory, 'data/cleaned_celeb_info.csv')
+    return pd.read_csv(csv_file_path)
+
+actors_df = load_actors_database()
+
+
+def minimum_edit_distance_search(query):
+    # Function to calculate combined minimum edit distance to both name and summary
+    def calculate_normalized_distance(row, query):
+        name = row['Celebrity Name'].lower()
+        summary = row['Wikipedia Summary'].lower()
+        query = query.lower()
+        
+        # Calculate edit distances
+        name_distance = lev.distance(query, name)
+        summary_distance = lev.distance(query, summary)
+        
+        # Normalize distances by the length of the longer string
+        max_name_length = max(len(query), len(name))
+        max_summary_length = max(len(query), len(summary))
+        
+        normalized_name_distance = name_distance / max_name_length if max_name_length else 0
+        normalized_summary_distance = summary_distance / max_summary_length if max_summary_length else 0
+        
+        # Combine the normalized distances
+        combined_distance = normalized_name_distance + normalized_summary_distance
+        return combined_distance
+
+    # Calculate distance for each actor
+    actors_df['normalized_distance'] = actors_df.apply(lambda row: calculate_normalized_distance(row, query), axis=1)
+
+    # Sort by distance and select top 5
+    top_matches = actors_df.sort_values(by='normalized_distance').head(5)
+
+    return top_matches[['Celebrity Name', 'Wikipedia Summary']].to_json(orient='records')
+
 # Sample search using json with pandas
 def json_search(query):
     matches = []
@@ -37,10 +77,10 @@ def json_search(query):
 def home():
     return render_template('base.html',title="sample html")
 
-@app.route("/episodes")
-def episodes_search():
-    text = request.args.get("title")
-    return json_search(text)
+@app.route("/actors")
+def actors_search():
+    query = request.args.get("query")
+    return minimum_edit_distance_search(query)
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)
