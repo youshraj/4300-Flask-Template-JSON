@@ -26,4 +26,4 @@ tzdata==2024.1
 Werkzeug==2.2.2
 wikipedia-api==0.5.4
 requests==2.26.0
-Levenshtein==0.12.2
+
