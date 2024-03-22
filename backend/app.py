@@ -103,5 +103,9 @@ def actors_search():
     query = request.args.get("query")
     return cosine_similarity_search(query)
 
+@app.route("/swiping")
+def swiping():
+    return render_template('swipe.html',title="sample html")
+
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)
