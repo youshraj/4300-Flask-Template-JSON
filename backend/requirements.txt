@@ -27,3 +27,4 @@ Werkzeug==2.2.2
 wikipedia-api==0.5.4
 requests==2.26.0
 Levenshtein==0.25.0
+scikit-learn==1.4.0

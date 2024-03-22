@@ -5,6 +5,8 @@ from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
 import Levenshtein as lev
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -64,6 +66,25 @@ def minimum_edit_distance_search(query):
 
     return top_matches[['Celebrity Name', 'Wikipedia Summary']].to_json(orient='records')
 
+def cosine_similarity_search(query):
+    # Vectorize the data
+    tfidf_vectorizer = TfidfVectorizer()
+    tfidf_matrix = tfidf_vectorizer.fit_transform(actors_df['Wikipedia Summary'])
+
+    # Transform query into vector representation
+    query_vector = tfidf_vectorizer.transform([query])
+
+    # Calculate cosine similarity between query and all actors
+    similarity_scores = cosine_similarity(tfidf_matrix, query_vector)
+
+    # Get indices of top matches
+    top_indices = similarity_scores.argsort(axis=0)[-5:][::-1].flatten()
+
+    # Get top matches
+    top_matches = actors_df.iloc[top_indices]
+
+    return top_matches[['Celebrity Name', 'Wikipedia Summary']].to_json(orient='records')
+
 # Sample search using json with pandas
 def json_search(query):
     matches = []
@@ -80,7 +101,7 @@ def home():
 @app.route("/actors")
 def actors_search():
     query = request.args.get("query")
-    return minimum_edit_distance_search(query)
+    return cosine_similarity_search(query)
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)
