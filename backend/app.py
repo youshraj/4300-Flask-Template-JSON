@@ -27,7 +27,7 @@ with open(json_file_path, 'r') as file:
 app = Flask(__name__)
 CORS(app)
 
-# load actors database
+# Load actors database
 def load_actors_database():
     current_directory = os.path.dirname(os.path.abspath(__file__))
     csv_file_path = os.path.join(current_directory, 'data/cleaned_celeb_info.csv')
@@ -64,7 +64,7 @@ def minimum_edit_distance_search(query):
     # Sort by distance and select top 5
     top_matches = actors_df.sort_values(by='normalized_distance').head(5)
 
-    return top_matches[['Celebrity Name', 'Wikipedia Summary']].to_json(orient='records')
+    return top_matches[['Celebrity Name', 'Wikipedia Summary', 'Image URL']].to_json(orient='records')
 
 def cosine_similarity_search(query):
     # Vectorize the data
@@ -83,7 +83,7 @@ def cosine_similarity_search(query):
     # Get top matches
     top_matches = actors_df.iloc[top_indices]
 
-    return top_matches[['Celebrity Name', 'Wikipedia Summary']].to_json(orient='records')
+    return top_matches[['Celebrity Name', 'Wikipedia Summary', 'Image URL']].to_json(orient='records')
 
 # Sample search using json with pandas
 def json_search(query):
@@ -102,10 +102,6 @@ def home():
 def actors_search():
     query = request.args.get("query")
     return cosine_similarity_search(query)
-
-@app.route("/swiping")
-def swiping():
-    return render_template('swipe.html',title="sample html")
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)

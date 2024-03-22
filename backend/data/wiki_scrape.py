@@ -7,7 +7,7 @@ celeb_to_imgs_dict = {}
 
 def get_celeb_info(celeb_name):
     # Initialize Wikipedia API
-    wiki_wiki = wikipediaapi.Wikipedia('chronoMingleClassProj/0.1 (ars369@cornell.edu)', 'en')
+    wiki_wiki = wikipediaapi.Wikipedia('en')
 
     page = wiki_wiki.page(celeb_name)
 
@@ -41,11 +41,11 @@ def read_celeb_names_from_file(file_path):
 def write_to_csv(celeb_data, file_path):
     with open(file_path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(['Celebrity Name', 'Wikipedia Summary'])
+        writer.writerow(['Celebrity Name', 'Wikipedia Summary', 'Image URL'])
         for celeb_name, data in celeb_data.items():
-            writer.writerow([celeb_name, data['summary']])
+            writer.writerow([celeb_name, data.get('summary', ''), data.get('image', '')])
 
-celeb_names_file = "4300-Flask-Template-JSON/backend/celeb_input.txt"  # Path to the text file containing celebrity names
+celeb_names_file = "celeb_input.txt"
 celeb_names = read_celeb_names_from_file(celeb_names_file)
 for celeb_name in celeb_names:
     summary = get_celeb_info(celeb_name)
@@ -61,7 +61,7 @@ for celeb_name in celeb_names:
     else:
         print(f"No image for {celeb_name} on Wikipedia")
 
-csv_file_path = "4300-Flask-Template-JSON/backend/celeb_info.csv"
+csv_file_path = "celeb_info.csv"
 write_to_csv(celeb_to_summary_dict, csv_file_path)
 
 print("Data written to CSV successfully!")

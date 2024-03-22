@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load your actors database into a DataFrame
-actors_df = pd.read_csv('/Users/bigdelle/Desktop/4300-Flask-Template-JSON/backend/data/celeb_info.csv')  # Replace with your file path
+actors_df = pd.read_csv('celeb_info.csv')  # Replace with your file path
 
 # This will store the names of the entries we're going to remove
 removed_entries = []
@@ -16,7 +16,7 @@ for index, row in actors_df.iterrows():
 actors_df.reset_index(drop=True, inplace=True)
 
 # Save the cleaned DataFrame back to a CSV file
-actors_df.to_csv('/Users/bigdelle/Desktop/4300-Flask-Template-JSON/backend/data/cleaned_celeb_info.csv', index=False)  # Replace with your desired file path
+actors_df.to_csv('cleaned_celeb_info.csv', index=False)  # Replace with your desired file path
 
 # Output the names of the removed entries
 print(removed_entries)

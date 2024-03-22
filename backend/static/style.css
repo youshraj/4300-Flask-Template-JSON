@@ -1,4 +1,15 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    background-color: #fddde6;
+}
+
 .full-body-container {
+    padding-top: 20px;
+    min-height: 100%;
+    position: relative;
+    padding-bottom: 50px;
     position: absolute;
     top: 0;
     left: 0;
@@ -10,6 +21,37 @@
     justify-content: start;
     align-items: center;
     flex-direction: column;
+
+}
+
+.actor-info {
+    display: flex;
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.actor-info img {
+    max-width: 100px;
+    height: auto;
+    margin-left: 20px;
+}
+
+.actor-name,
+.actor-desc {
+    margin: 0;
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-container img {
+    max-width: 100%;
+    height: auto;
+    max-height: 150px;
 }
 
 #google-c {
@@ -49,6 +91,7 @@
 }
 
 .input-box {
+    background-color: #ffffff;
     border-radius: 50px;
     border: 1px solid black;
     display: flex;
@@ -89,9 +132,7 @@
 .episode-desc {
     font-family: 'Montserrat', sans-serif;
 }
-
-
-
+/* 
 *,
 *:before,
 *:after {
@@ -174,4 +215,4 @@ body {
     font-size: 20px;
     padding: 0 16px;
     pointer-events: none;
-}
+} */
