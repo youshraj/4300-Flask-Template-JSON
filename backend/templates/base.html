@@ -23,11 +23,13 @@
     </div>
 
     <script>
-        function answerBoxTemplate(name, description, imageUrl) {
+        function answerBoxTemplate(name, description, imageUrl, gender, profession) {
             return `
                 <div class='actor-info'>
                     <div class="text-content">
                         <h3 class='actor-name'>${name}</h3>
+                        <p class='actor-gender'>Gender: ${gender}</p>
+                        <p class='actor-gender'>Profession: ${profession}</p>
                         <p class='actor-desc'>${description}</p>
                     </div>
                     <img src="${imageUrl}" alt="Image of ${name}">
@@ -50,7 +52,7 @@
                     console.log(data)
                     data.forEach(row => {
                         let tempDiv = document.createElement("div");
-                        tempDiv.innerHTML = answerBoxTemplate(row['Celebrity Name'], row['Wikipedia Summary'], row['Image URL']);
+                        tempDiv.innerHTML = answerBoxTemplate(row['Celebrity Name'], row['Wikipedia Summary'], row['Image URL'], row['gender'], row['profession']);
                         document.getElementById("answer-box").appendChild(tempDiv);
                     });
                 });

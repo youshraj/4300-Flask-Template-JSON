@@ -67,23 +67,39 @@ def minimum_edit_distance_search(query):
     return top_matches[['Celebrity Name', 'Wikipedia Summary', 'Image URL']].to_json(orient='records')
 
 def cosine_similarity_search(query):
+    # Pre-process query for gender
+    male_keywords = ["man", "male", "men", "boy", "boys", "guy", "guys", "dude", "dudes"]
+    female_keywords = ["female", "woman", "women", "girl", "lady", "ladies", "chick", "chicks"]
+    gender_filter = None
+
+    contains_male_keyword = any(keyword in query.lower() for keyword in male_keywords)
+    contains_female_keyword = any(keyword in query.lower() for keyword in female_keywords)
+
+    # If both male and female keywords are present or none, do not filter by gender
+    if contains_male_keyword and contains_female_keyword or not (contains_male_keyword or contains_female_keyword):
+        filtered_df = actors_df
+    else:
+        gender_filter = 'male' if contains_male_keyword else 'female'
+        filtered_df = actors_df[actors_df['gender'] == gender_filter]
+
     # Vectorize the data
     tfidf_vectorizer = TfidfVectorizer()
-    tfidf_matrix = tfidf_vectorizer.fit_transform(actors_df['Wikipedia Summary'])
+    tfidf_matrix = tfidf_vectorizer.fit_transform(filtered_df['profession'])
 
     # Transform query into vector representation
     query_vector = tfidf_vectorizer.transform([query])
 
-    # Calculate cosine similarity between query and all actors
+    # Calculate cosine similarity between query and all actors in filtered_df
     similarity_scores = cosine_similarity(tfidf_matrix, query_vector)
 
     # Get indices of top matches
-    top_indices = similarity_scores.argsort(axis=0)[-5:][::-1].flatten()
+    top_indices = similarity_scores.flatten().argsort()[-5:][::-1]  # Adjust number as needed
 
     # Get top matches
-    top_matches = actors_df.iloc[top_indices]
+    top_matches = filtered_df.iloc[top_indices]
 
-    return top_matches[['Celebrity Name', 'Wikipedia Summary', 'Image URL']].to_json(orient='records')
+    # Select required columns to return
+    return top_matches[['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession']].to_json(orient='records')
 
 # Sample search using json with pandas
 def json_search(query):
