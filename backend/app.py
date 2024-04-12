@@ -35,37 +35,6 @@ def load_actors_database():
 
 actors_df = load_actors_database()
 
-
-def minimum_edit_distance_search(query):
-    # Function to calculate combined minimum edit distance to both name and summary
-    def calculate_normalized_distance(row, query):
-        name = row['Celebrity Name'].lower()
-        summary = row['Wikipedia Summary'].lower()
-        query = query.lower()
-        
-        # Calculate edit distances
-        name_distance = lev.distance(query, name)
-        summary_distance = lev.distance(query, summary)
-        
-        # Normalize distances by the length of the longer string
-        max_name_length = max(len(query), len(name))
-        max_summary_length = max(len(query), len(summary))
-        
-        normalized_name_distance = name_distance / max_name_length if max_name_length else 0
-        normalized_summary_distance = summary_distance / max_summary_length if max_summary_length else 0
-        
-        # Combine the normalized distances
-        combined_distance = normalized_name_distance + normalized_summary_distance
-        return combined_distance
-
-    # Calculate distance for each actor
-    actors_df['normalized_distance'] = actors_df.apply(lambda row: calculate_normalized_distance(row, query), axis=1)
-
-    # Sort by distance and select top 5
-    top_matches = actors_df.sort_values(by='normalized_distance').head(5)
-
-    return top_matches[['Celebrity Name', 'Wikipedia Summary', 'Image URL']].to_json(orient='records')
-
 def cosine_similarity_search(query):
     # Pre-process query for gender
     male_keywords = ["man", "male", "men", "boy", "boys", "guy", "guys", "dude", "dudes"]
