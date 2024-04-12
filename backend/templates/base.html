@@ -1,30 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <title>{% block title %}{% endblock %} - Flaskr</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
-    rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+  rel="stylesheet"
+/>
 
 <body>
-    <div class="full-body-container">
-        <div class="top-text">
-            <div class="logo-container">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" />
-            </div>
-            <div class="input-box" onclick="sendFocus()">
-                <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for your celebrity matches" id="filter-text-val" onkeyup="filterText()">
-            </div>
-        </div>
-        <div id="answer-box">
-
-        </div>
+  <div class="full-body-container">
+    <div class="top-text">
+      <div class="logo-container">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Logo"
+        />
+      </div>
+      <div class="input-box" onclick="sendFocus()">
+        <img src="{{ url_for('static', filename='images/mag.png') }}" />
+        <input
+          placeholder="Search for your celebrity matches"
+          id="filter-text-val"
+          onkeyup="filterText()"
+        />
+      </div>
+      <div>
+        <a href="swipe.html"><button>Start Swiping</button></a>
+      </div>
     </div>
+    <div id="answer-box"></div>
+  </div>
 
-    <script>
-        function answerBoxTemplate(name, description, imageUrl, gender, profession) {
-            return `
+  <script>
+    function answerBoxTemplate(
+      name,
+      description,
+      imageUrl,
+      gender,
+      profession
+    ) {
+      return `
                 <div class='actor-info'>
                     <div class="text-content">
                         <h3 class='actor-name'>${name}</h3>
@@ -35,27 +51,31 @@
                     <img src="${imageUrl}" alt="Image of ${name}">
                 </div>
             `;
-        }
+    }
 
+    function sendFocus() {
+      document.getElementById("filter-text-val").focus();
+    }
 
-
-        function sendFocus() {
-            document.getElementById('filter-text-val').focus();
-        }
-
-        function filterText() {
-            document.getElementById("answer-box").innerHTML = "";
-            const query = document.getElementById("filter-text-val").value;
-            fetch("/actors?" + new URLSearchParams({ query: query }).toString())
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log(data)
-                    data.forEach(row => {
-                        let tempDiv = document.createElement("div");
-                        tempDiv.innerHTML = answerBoxTemplate(row['Celebrity Name'], row['Wikipedia Summary'], row['Image URL'], row['gender'], row['profession']);
-                        document.getElementById("answer-box").appendChild(tempDiv);
-                    });
-                });
-        }
-    </script>
+    function filterText() {
+      document.getElementById("answer-box").innerHTML = "";
+      const query = document.getElementById("filter-text-val").value;
+      fetch("/actors?" + new URLSearchParams({ query: query }).toString())
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          data.forEach((row) => {
+            let tempDiv = document.createElement("div");
+            tempDiv.innerHTML = answerBoxTemplate(
+              row["Celebrity Name"],
+              row["Wikipedia Summary"],
+              row["Image URL"],
+              row["gender"],
+              row["profession"]
+            );
+            document.getElementById("answer-box").appendChild(tempDiv);
+          });
+        });
+    }
+  </script>
 </body>

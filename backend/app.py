@@ -114,6 +114,14 @@ def json_search(query):
 def home():
     return render_template('base.html',title="sample html")
 
+@app.route('/swipe.html')
+def swipe_page():
+    return render_template('swipe.html')
+
+@app.route('/output.html')
+def output_page():
+    return render_template('output.html')
+
 @app.route("/actors")
 def actors_search():
     query = request.args.get("query")
