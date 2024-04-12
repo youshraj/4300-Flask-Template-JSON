@@ -1,6 +1,5 @@
 import pandas as pd
 from openai import OpenAI
-import tqdm
 
 #API Key
 client = ""
@@ -26,7 +25,7 @@ df = pd.read_csv('cleaned_celeb_info.csv')
 
 df['Character Traits'] = ''
 
-for index, row in ttqdm(df.iterrows(), desc="Progress for requests"):
+for index, row in df.iterrows():
     personal_life_text = row['Personal Life']
     if pd.notna(personal_life_text):  
         traits = get_character_traits(personal_life_text)
