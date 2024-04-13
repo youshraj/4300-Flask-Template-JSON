@@ -7,6 +7,7 @@ import pandas as pd
 import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from user_preferences_utils import calculate_match_score
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -41,7 +42,6 @@ def cosine_similarity_search(query):
     # Attempt to get the user's gender preference, default to 'both' if not set
     interest = user_preferences.get('interest', 'both')
 
-    # Depending on the interest, filter the actors_df accordingly
     if interest == 'men':
         filtered_df = actors_df[actors_df['gender'] == 'male']
     elif interest == 'women':
