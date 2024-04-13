@@ -104,11 +104,15 @@ def home():
 
 @app.route('/swipe')
 def swipe_page():
-    return render_template('swipe.html')
+    data = request.args.get('data')
+    #print("Data received in swipe_page:", data)
+    return render_template('swipe.html', data=data)
 
 @app.route('/output')
 def output_page():
-    return render_template('output.html')
+    data = request.args.get('data')
+    #print("Data received in output_page:", data)
+    return render_template('output.html', data=data)
 
 @app.route("/actors")
 def actors_search():

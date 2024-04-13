@@ -16,5 +16,70 @@
         alt="Logo"
       />
     </div>
+    <div class="results-container">
+      <div id="answer-box"></div>
+    </div>
+    <div>
+      <a href="/"><button class="button">Back To Home</button></a>
+    </div>
   </div>
+
+  <script>
+    function answerBoxTemplate(
+      name,
+      description,
+      imageUrl,
+      gender,
+      profession,
+      trendsScore = "", //add later
+      reasoning = ""
+    ) {
+      return `
+                <div class='actor-info'>
+                    <div class="text-content">
+                        <h3 class='actor-name'>${name}</h3>
+                        <p class='actor-gender'>Gender: ${gender}</p>
+                        <p class='actor-gender'>Profession: ${profession}</p>
+                        <p>Popularity Score: ${trendsScore}</p>
+                        <p>Why You're A Match: ${reasoning}</p>
+                        <p class='actor-desc'>${description}</p>
+                    </div>
+                    <img src="${imageUrl}" alt="Image of ${name}">
+                </div>
+            `;
+    }
+    function sendFocus() {
+      document.getElementById("filter-text-val").focus();
+    }
+
+    function filterText() {
+      document.getElementById("answer-box").innerHTML = "";
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      const dataParam = urlParams.get("data");
+      //console.log(dataParam);
+      const data = decodeURIComponent(dataParam);
+      console.log(data);
+
+      let output = JSON.parse(data);
+      output.forEach((row) => {
+        let tempDiv = document.createElement("div");
+        let firstSentenceRegex = /^.*?[.!?](?=\s|$)/;
+        let firstSentence =
+          row["Wikipedia Summary"].match(firstSentenceRegex)[0];
+        tempDiv.innerHTML = answerBoxTemplate(
+          row["Celebrity Name"],
+          firstSentence,
+          row["Image URL"],
+          row["gender"],
+          row["profession"],
+          row["Interest Score"]
+        );
+        document.getElementById("answer-box").appendChild(tempDiv);
+      });
+    }
+    window.addEventListener("load", function () {
+      filterText();
+    });
+  </script>
 </body>

@@ -8,7 +8,6 @@
   rel="stylesheet"
 />
 
-
 <body>
   <div class="full-body-container">
     <div class="top-text">
@@ -23,24 +22,26 @@
         <input
           placeholder="Search for your celebrity matches"
           id="filter-text-val"
-          onkeyup="filterText()"
         />
       </div>
-      <div>
-        <a href="/swipe"><button>Start Swiping</button></a>
-      </div>
+      <div><button onclick="filterText()">Start Swiping</button></div>
       <div>
         <a href="/preferences"><button>Set Preferences</button></a>
-    </div>
-    {% if preferences and preferences.interest and preferences.user_traits and preferences.partner_traits %}
-        <div class="preferences-display">
-            <p>Preferences: Interested in {{ preferences.interest }}, Traits: {{ preferences.user_traits|join(", ") }}, Looking for: {{ preferences.partner_traits|join(", ") }}</p>
-        </div>
-    {% else %}
-        <div class="preferences-display">
-            <p>Preferences not set.</p>
-        </div>
-    {% endif %}
+      </div>
+      {% if preferences and preferences.interest and preferences.user_traits and
+      preferences.partner_traits %}
+      <div class="preferences-display">
+        <p>
+          Preferences: Interested in {{ preferences.interest }}, Traits: {{
+          preferences.user_traits|join(", ") }}, Looking for: {{
+          preferences.partner_traits|join(", ") }}
+        </p>
+      </div>
+      {% else %}
+      <div class="preferences-display">
+        <p>Preferences not set.</p>
+      </div>
+      {% endif %}
     </div>
     <div id="answer-box"></div>
   </div>
@@ -76,18 +77,9 @@
       fetch("/actors?" + new URLSearchParams({ query: query }).toString())
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
-          data.forEach((row) => {
-            let tempDiv = document.createElement("div");
-            tempDiv.innerHTML = answerBoxTemplate(
-              row["Celebrity Name"],
-              row["Wikipedia Summary"],
-              row["Image URL"],
-              row["gender"],
-              row["profession"]
-            );
-            document.getElementById("answer-box").appendChild(tempDiv);
-          });
+          //console.log(data);
+          data = encodeURIComponent(JSON.stringify(data));
+          window.location.href = "/swipe?data=" + data;
         });
     }
   </script>

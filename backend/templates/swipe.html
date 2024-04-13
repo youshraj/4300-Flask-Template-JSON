@@ -23,7 +23,7 @@
       <h3>card 3</h3>
     </div>
     <div>
-      <a href="output.html"><button>Get Your Results!</button></a>
+      <button onclick="sendOutput()">Get Your Results!</button>
     </div>
 
 
@@ -50,31 +50,38 @@
 
     initCards();
 
-    allCards.forEach(function (el) {
-      var hammertime = new Hammer(el);
+    // allCards.forEach(function (el) {
+    //   var hammertime = new Hammer(el);
 
-      hammertime.on('pan', function (event) {
-        el.classList.add('moving');
-      });
+    //   hammertime.on('pan', function (event) {
+    //     el.classList.add('moving');
+    //   });
 
-      hammertime.on('pan', function (event) {
-        if (event.deltaX === 0) return;
-        if (event.center.x === 0 && event.center.y === 0) return;
+    //   hammertime.on('pan', function (event) {
+    //     if (event.deltaX === 0) return;
+    //     if (event.center.x === 0 && event.center.y === 0) return;
 
-        tinderContainer.classList.toggle('tinder_love', event.deltaX > 0);
-        tinderContainer.classList.toggle('tinder_nope', event.deltaX < 0);
+    //     tinderContainer.classList.toggle('tinder_love', event.deltaX > 0);
+    //     tinderContainer.classList.toggle('tinder_nope', event.deltaX < 0);
 
-        var xMulti = event.deltaX * 0.03;
-        var yMulti = event.deltaY / 80;
-        var rotate = xMulti * yMulti;
+    //     var xMulti = event.deltaX * 0.03;
+    //     var yMulti = event.deltaY / 80;
+    //     var rotate = xMulti * yMulti;
 
-        event.target.style.transform = 'translate(' + event.deltaX + 'px, ' + event.deltaY + 'px) rotate(' + rotate + 'deg)';
-      });
-
-
-    });
+    //     event.target.style.transform = 'translate(' + event.deltaX + 'px, ' + event.deltaY + 'px) rotate(' + rotate + 'deg)';
+    //   });
 
 
+    //});
+  
+    function sendOutput() {
+      //update later to send improved output through swiping
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      const data = urlParams.get('data');
+
+      window.location.href = "/output?data=" + data;
+    }
 
   </script>
 
