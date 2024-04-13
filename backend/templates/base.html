@@ -24,7 +24,9 @@
           id="filter-text-val"
         />
       </div>
-      <div><button onclick="filterText()">Start Swiping</button></div>
+      <div>
+        <button onclick="filterText()">Start Swiping</button>
+      </div>
       <div>
         <a href="/preferences"><button>Set Preferences</button></a>
       </div>
@@ -47,26 +49,6 @@
   </div>
 
   <script>
-    function answerBoxTemplate(
-      name,
-      description,
-      imageUrl,
-      gender,
-      profession
-    ) {
-      return `
-                <div class='actor-info'>
-                    <div class="text-content">
-                        <h3 class='actor-name'>${name}</h3>
-                        <p class='actor-gender'>Gender: ${gender}</p>
-                        <p class='actor-gender'>Profession: ${profession}</p>
-                        <p class='actor-desc'>${description}</p>
-                    </div>
-                    <img src="${imageUrl}" alt="Image of ${name}">
-                </div>
-            `;
-    }
-
     function sendFocus() {
       document.getElementById("filter-text-val").focus();
     }
@@ -77,9 +59,9 @@
       fetch("/actors?" + new URLSearchParams({ query: query }).toString())
         .then((response) => response.json())
         .then((data) => {
-          //console.log(data);
-          data = encodeURIComponent(JSON.stringify(data));
-          window.location.href = "/swipe?data=" + data;
+          console.log(data);
+          localStorage.setItem("data", JSON.stringify(data));
+          window.location.href = "/swipe";
         });
     }
   </script>

@@ -8,6 +8,7 @@ import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from user_preferences_utils import calculate_match_score
+import urllib.parse
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -104,15 +105,11 @@ def home():
 
 @app.route('/swipe')
 def swipe_page():
-    data = request.args.get('data')
-    #print("Data received in swipe_page:", data)
-    return render_template('swipe.html', data=data)
+    return render_template('swipe.html')
 
 @app.route('/output')
 def output_page():
-    data = request.args.get('data')
-    #print("Data received in output_page:", data)
-    return render_template('output.html', data=data)
+    return render_template('output.html')
 
 @app.route("/actors")
 def actors_search():

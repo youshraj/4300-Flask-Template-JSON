@@ -23,7 +23,7 @@
       <h3>card 3</h3>
     </div>
     <div>
-      <button onclick="sendOutput()">Get Your Results!</button>
+      <button onclick="goToOutput()">Get Your Results!</button>
     </div>
 
 
@@ -74,13 +74,14 @@
 
     //});
   
-    function sendOutput() {
-      //update later to send improved output through swiping
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      const data = urlParams.get('data');
+    function getOrgOutput() {
+      const data = localStorage.getItem("data");
+      return data
 
-      window.location.href = "/output?data=" + data;
+    }
+
+    function goToOutput() {
+      window.location.href = "/output";
     }
 
   </script>
