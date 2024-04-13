@@ -32,10 +32,14 @@
       <div>
         <a href="/preferences"><button>Set Preferences</button></a>
     </div>
-    {% if preferences %}
-    <div class="preferences-display">
-        <p>Preferences: Interested in {{ preferences.interest }}, Traits: {{ preferences.user_traits|join(", ") }}, Looking for: {{ preferences.partner_traits|join(", ") }}</p>
-    </div>
+    {% if preferences and preferences.interest and preferences.user_traits and preferences.partner_traits %}
+        <div class="preferences-display">
+            <p>Preferences: Interested in {{ preferences.interest }}, Traits: {{ preferences.user_traits|join(", ") }}, Looking for: {{ preferences.partner_traits|join(", ") }}</p>
+        </div>
+    {% else %}
+        <div class="preferences-display">
+            <p>Preferences not set.</p>
+        </div>
     {% endif %}
     </div>
     <div id="answer-box"></div>

@@ -32,26 +32,22 @@ user_preferences = {}
 # Load actors database
 def load_actors_database():
     current_directory = os.path.dirname(os.path.abspath(__file__))
-    csv_file_path = os.path.join(current_directory, 'data/cleaned_celeb_info.csv')
+    csv_file_path = os.path.join(current_directory, 'data/final_celeb_info.csv')
     return pd.read_csv(csv_file_path)
 
 actors_df = load_actors_database()
 
 def cosine_similarity_search(query):
-    # Pre-process query for gender
-    male_keywords = ["man", "male", "men", "boy", "boys", "guy", "guys", "dude", "dudes"]
-    female_keywords = ["female", "woman", "women", "girl", "lady", "ladies", "chick", "chicks"]
-    gender_filter = None
+    # Attempt to get the user's gender preference, default to 'both' if not set
+    interest = user_preferences.get('interest', 'both')
 
-    contains_male_keyword = any(keyword in query.lower() for keyword in male_keywords)
-    contains_female_keyword = any(keyword in query.lower() for keyword in female_keywords)
-
-    # If both male and female keywords are present or none, do not filter by gender
-    if contains_male_keyword and contains_female_keyword or not (contains_male_keyword or contains_female_keyword):
-        filtered_df = actors_df
+    # Depending on the interest, filter the actors_df accordingly
+    if interest == 'men':
+        filtered_df = actors_df[actors_df['gender'] == 'male']
+    elif interest == 'women':
+        filtered_df = actors_df[actors_df['gender'] == 'female']
     else:
-        gender_filter = 'male' if contains_male_keyword else 'female'
-        filtered_df = actors_df[actors_df['gender'] == gender_filter]
+        filtered_df = actors_df  # If 'both' or not specified, no gender filter is applied
 
     # Vectorize the data
     tfidf_vectorizer = TfidfVectorizer()
