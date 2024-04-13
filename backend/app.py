@@ -41,7 +41,6 @@ def cosine_similarity_search(query):
     # Attempt to get the user's gender preference, default to 'both' if not set
     interest = user_preferences.get('interest', 'both')
 
-    # Depending on the interest, filter the actors_df accordingly
     if interest == 'men':
         filtered_df = actors_df[actors_df['gender'] == 'male']
     elif interest == 'women':
