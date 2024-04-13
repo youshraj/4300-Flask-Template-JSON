@@ -7,6 +7,7 @@ import pandas as pd
 import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from user_preferences_utils import calculate_match_score
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
