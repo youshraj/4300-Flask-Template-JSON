@@ -8,6 +8,7 @@
   rel="stylesheet"
 />
 
+
 <body>
   <div class="full-body-container">
     <div class="top-text">
@@ -26,8 +27,16 @@
         />
       </div>
       <div>
-        <a href="swipe.html"><button>Start Swiping</button></a>
+        <a href="/swipe"><button>Start Swiping</button></a>
       </div>
+      <div>
+        <a href="/preferences"><button>Set Preferences</button></a>
+    </div>
+    {% if preferences %}
+    <div class="preferences-display">
+        <p>Preferences: Interested in {{ preferences.interest }}, Traits: {{ preferences.user_traits|join(", ") }}, Looking for: {{ preferences.partner_traits|join(", ") }}</p>
+    </div>
+    {% endif %}
     </div>
     <div id="answer-box"></div>
   </div>

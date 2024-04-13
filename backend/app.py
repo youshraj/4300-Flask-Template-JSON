@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
@@ -26,6 +26,8 @@ with open(json_file_path, 'r') as file:
 
 app = Flask(__name__)
 CORS(app)
+
+user_preferences = {}
 
 # Load actors database
 def load_actors_database():
@@ -79,15 +81,36 @@ def json_search(query):
     matches_filtered_json = matches_filtered.to_json(orient='records')
     return matches_filtered_json
 
+@app.route('/preferences', methods=['GET'])
+def show_preferences_form():
+    return render_template('preferences.html')
+
+@app.route('/save_preferences', methods=['POST'])
+def save_preferences():
+    global user_preferences
+    # extract prefs 
+    interest = request.form['interest']
+    user_traits = request.form['user_traits'].split(',')
+    partner_traits = request.form['partner_traits'].split(',')
+
+    user_preferences = {
+        'interest': interest,
+        'user_traits': user_traits,
+        'partner_traits': partner_traits
+    }
+
+    # Redirect to the home page
+    return redirect(url_for('home'))  
+
 @app.route("/")
 def home():
-    return render_template('base.html',title="sample html")
+    return render_template('base.html',title="home page", preferences=user_preferences)
 
-@app.route('/swipe.html')
+@app.route('/swipe')
 def swipe_page():
     return render_template('swipe.html')
 
-@app.route('/output.html')
+@app.route('/output')
 def output_page():
     return render_template('output.html')
 
