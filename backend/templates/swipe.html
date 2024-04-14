@@ -66,6 +66,8 @@
     var cardsContainer = document.getElementById('cardsContainer');
     var cardsData = [];
     var currentCardIndex = 0;
+    var swipeCount = 0;
+    var maxSwipes = 15;
 
     function createCard(card) {
       var cardElement = document.createElement('div');
@@ -109,16 +111,28 @@
       });
 
     function swipeLeft() {
-      if (currentCardIndex > 0) {
-        currentCardIndex++;
-        initCards();
+      if (swipeCount < maxSwipes) {
+        if (currentCardIndex > 0) {
+          currentCardIndex++;
+          initCards();
+          swipeCount++;
+        }
+        if (swipeCount === maxSwipes) {
+          document.getElementById('resultsButton').style.display = 'block';
+        }
       }
     }
 
     function swipeRight() {
-      if (currentCardIndex < cardsData.length - 1) {
-        currentCardIndex++;
-        initCards();
+      if (swipeCount < maxSwipes) {
+        if (currentCardIndex < cardsData.length - 1) {
+          currentCardIndex++;
+          initCards();
+          swipeCount++;
+        }
+        if (swipeCount === maxSwipes) {
+          document.getElementById('resultsButton').style.display = 'block';
+        }
       }
     }
 
