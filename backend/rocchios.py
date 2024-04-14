@@ -1,61 +1,37 @@
-import numpy as np
-import pandas as pd
+from flask import Flask, request, redirect, url_for
+import requests
+from sklearn.feature_extraction.text import CountVectorizer
 
-# Read the data from the CSV file into a DataFrame
-celebrities_df = pd.read_csv('backend/data/top_matching_celebrities.csv')
 
-# User traits and preferences
-user_traits = ["adventurous", "funny", "outgoing"]
-user_preferences = {
-    'interest': 'women',
-    'partner_traits': ["creative", "intelligent"]
-}
 
-# Initialize Rocchio vector
-rocchio_vector = np.zeros(len(user_traits))
+def update_query_vector(query_vector, swipe_direction):
 
-# Iterate through celebrities, limiting to 15
-num_celebrities = min(15, len(celebrities_df))
-for index, row in celebrities_df.head(num_celebrities).iterrows():
-    print(f"\nCelebrity Name: {row['Celebrity Name']}")
-    print(f"Wikipedia Summary: {row['Wikipedia Summary']}")
-    print(f"Personal Life: {row['Personal Life']}")
-    print(f"Image URL: {row['Image URL']}")
-    print(f"Gender: {row['Gender']}")
-    print(f"Profession: {row['Profession']}")
-    print(f"Character Traits: {row['Character Traits']}")
+    updated_query_vector = {}
+
+    # Assign weights to each term
+    for term in query_vector:
+        # Initialize the weight for the term to 1
+        updated_query_vector[term] = []
+
+        # Assign weight for each value in the term list
+        for value in query_vector[term]:
+            updated_query_vector[term].append((value, 1))
+
+    # Update query vector based on swipe direction
+    if swipe_direction == 'left':
+        # Decrease the weight by swipe_weight for each term
+        for term in updated_query_vector:
+            for i, (value, weight) in enumerate(updated_query_vector[term]):
+                updated_query_vector[term][i] = (value, weight - .5)
+        print(updated_query_vector)
+    elif swipe_direction == 'right':
     
-    opinion = int(input("What do you think about this celebrity? (1: strongly dislike, 2: dislike, 3: neutral, 4: like, 5: strongly like): "))
+        # Increase the weight by swipe_weight for each term
+        for term in updated_query_vector:
+            for i, (value, weight) in enumerate(updated_query_vector[term]):
+                updated_query_vector[term][i] = (value, weight + .5)
+        print(updated_query_vector)
+    print(updated_query_vector)
+    return updated_query_vector
+   
 
-    if opinion < 3:
-        opinion_vector = np.array([-1] * len(user_traits))
-    elif opinion > 3:
-        opinion_vector = np.array([1] * len(user_traits))
-    else:
-        opinion_vector = np.zeros(len(user_traits))
-
-    # Update Rocchio vector
-    rocchio_vector += opinion_vector
-
-# Apply Rocchio's algorithm to find the ideal celebrity
-for trait in user_traits:
-    if trait in user_preferences['partner_traits']:
-        rocchio_vector[user_traits.index(trait)] += 1
-    if trait in user_preferences['interest']:
-        rocchio_vector[user_traits.index(trait)] += 1
-
-# Find the celebrity closest to the ideal vector
-min_distance = float('inf')
-ideal_celeb = None
-for index, row in celebrities_df.head(num_celebrities).iterrows():
-    celeb_vector = np.zeros(len(user_traits))
-    celeb_traits = row['Gender'].split(', ') + row['Profession'].split(', ') + row['Character Traits'].split(', ')
-    for trait in celeb_traits:
-        if trait in user_preferences:
-            celeb_vector[user_traits.index(trait)] = 1
-    distance = np.linalg.norm(rocchio_vector - celeb_vector)
-    if distance < min_distance:
-        min_distance = distance
-        ideal_celeb = row['Celebrity Name']
-
-print(f"\nIdeal celebrity for you is: {ideal_celeb}")

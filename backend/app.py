@@ -8,7 +8,8 @@ import pandas as pd
 import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from user_preferences_utils import calculate_match_score
+from user_preferences_utils import calculate_match_score,find_top_matches
+from rocchios import update_query_vector
 import urllib.parse
 from flask import jsonify
 
@@ -76,7 +77,27 @@ def cosine_similarity_search(query, user_traits):
     # Convert DataFrame to JSON and return
     return jsonify(top_matches.to_dict(orient='records'))
 
-    
+# get profiles for swiping
+def profiles():
+    actors_data = []
+    with open('backend/data/final_celeb_info.csv', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            actors_data.append({
+                'Name': row['Celebrity Name'],
+                'Summary': row['Wikipedia Summary'],
+                'PersonalLife': row['Personal Life'],
+                'Image': row['Image URL'],
+                'gender': row['gender'],
+                'profession': row['profession'],
+                'character Traits': row['Character Traits']
+            })
+    return jsonify(actors_data) 
+  
+
+
+
+
 # Sample search using json with pandas
 def json_search(query):
     matches = []
@@ -105,6 +126,7 @@ def save_preferences():
     }
 
     # Redirect to the home page
+
     return redirect(url_for('home'))  
 
 @app.route("/")
@@ -129,21 +151,16 @@ def actors_search():
 
 @app.route("/get_profiles")
 def get_profiles():
-    actors_data = []
+    return profiles()
 
-    with open('backend/data/final_celeb_info.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            actors_data.append({
-                'Name': row['Celebrity Name'],
-                'Summary': row['Wikipedia Summary'],
-                'PersonalLife': row['Personal Life'],
-                'Image': row['Image URL'],
-                'Gender': row['gender'],
-                'Profession': row['profession'],
-                'CharacterTraits': row['Character Traits']
-            })
-    return jsonify(actors_data)
+@app.route('/swipe', methods=['POST'])
+def handle_swipe():
+    data = request.get_json()
+    swipe_direction = data.get('direction')
+    print("Swipe direction:", swipe_direction)
+    update_query_vector(user_preferences, swipe_direction)
+    return "Swipe received successfully."
+
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)

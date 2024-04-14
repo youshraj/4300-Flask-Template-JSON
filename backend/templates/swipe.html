@@ -120,6 +120,7 @@
         if (swipeCount === maxSwipes) {
           document.getElementById('resultsButton').style.display = 'block';
         }
+        sendSwipeRequest('left');
       }
     }
 
@@ -133,13 +134,29 @@
         if (swipeCount === maxSwipes) {
           document.getElementById('resultsButton').style.display = 'block';
         }
+        sendSwipeRequest('right');
       }
     }
 
     function goToOutput() {
       window.location.href = "/output";
     }
+
+    function sendSwipeRequest(direction) {
+      // Send AJAX request to the server
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/swipe", true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+              console.log("Swipe request sent successfully.");
+          }
+      };
+      xhr.send(JSON.stringify({ direction: direction }));
+  }
   </script>
+
+
 </body>
 
 </html>
