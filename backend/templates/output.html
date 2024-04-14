@@ -3,18 +3,13 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-  href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
-  rel="stylesheet"
-/>
+<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+  rel="stylesheet" />
 
 <body>
   <div class="full-body-container">
     <div class="logo-container">
-      <img
-        src="{{ url_for('static', filename='images/logo.png') }}"
-        alt="Logo"
-      />
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" />
     </div>
     <div class="results-container">
       <div id="answer-box"></div>
@@ -32,7 +27,7 @@
       gender,
       profession,
       trendsScore = "", //add later
-      reasoning = ""
+      reasoning
     ) {
       return `
                 <div class='actor-info'>
@@ -41,7 +36,7 @@
                         <p class='actor-gender'>Gender: ${gender}</p>
                         <p class='actor-gender'>Profession: ${profession}</p>
                         <p>Popularity Score: ${trendsScore}</p>
-                        <p>Why You're A Match: ${reasoning}</p>
+                        <p>This person matches ${reasoning} of things you are lookign for.</p>
                         <p class='actor-desc'>${description}</p>
                     </div>
                     <img src="${imageUrl}" alt="Image of ${name}">
@@ -65,7 +60,8 @@
           row["Image URL"],
           row["gender"],
           row["profession"],
-          row["Interest Score"]
+          row["Interest Score"],
+          row['reasoning']
         );
         document.getElementById("answer-box").appendChild(tempDiv);
       });
