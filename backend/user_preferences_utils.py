@@ -37,12 +37,6 @@ def find_top_matches(user_preferences, celebrities_data, top_n=15):
     return top_celebrities
     
 
-# Example usage:
-user_traits = "adventurous, funny, outgoing"
-user_preferences = {
-    'interest': 'women' ,
-    'partner_traits': "committed, stylish, fatherly, dedicated, nurturing "
-}
 celebrities_data = '/Users/bigdelle/Desktop/4300-Flask-Template-JSON/backend/data/final_celeb_info.csv'
 
 #top_matches = find_top_matches(user_preferences, celebrities_data)

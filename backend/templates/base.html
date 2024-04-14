@@ -23,27 +23,24 @@
           placeholder="Search for your celebrity matches"
           id="filter-text-val"
         />
+        <button onclick="filterText()" class="swipe-button">Start Swiping</button>
+      </div>      
+      
+
+      <div class="preference-status">
+        {% if preferences and preferences.interest and preferences.user_traits and preferences.partner_traits %}
+          <p>Preference Status: Set</p>
+          <p>
+            Preferences: Interested in {{ preferences.interest }}, Traits: {{
+            preferences.user_traits|join(", ") }}, Looking for: {{
+            preferences.partner_traits|join(", ") }}
+          </p>
+        {% else %}
+          <p>Preference Status: Not yet set</p>
+        {% endif %}
+        <a href="/preferences"><button class="preferences-button">Set Preferences</button></a>
       </div>
-      <div>
-        <button onclick="filterText()">Start Swiping</button>
-      </div>
-      <div>
-        <a href="/preferences"><button>Set Preferences</button></a>
-      </div>
-      {% if preferences and preferences.interest and preferences.user_traits and
-      preferences.partner_traits %}
-      <div class="preferences-display">
-        <p>
-          Preferences: Interested in {{ preferences.interest }}, Traits: {{
-          preferences.user_traits|join(", ") }}, Looking for: {{
-          preferences.partner_traits|join(", ") }}
-        </p>
-      </div>
-      {% else %}
-      <div class="preferences-display">
-        <p>Preferences not set.</p>
-      </div>
-      {% endif %}
+      
     </div>
     <div id="answer-box"></div>
   </div>

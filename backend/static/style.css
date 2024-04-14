@@ -91,16 +91,33 @@ body {
     margin-right: 3px;
 }
 
+.swipe-button {
+    padding: 10px 20px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #db4437;
+    color: white;
+    cursor: pointer;
+    outline: none; 
+    position: absolute;
+    right: 10px; 
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 .input-box {
     background-color: #ffffff;
     border-radius: 50px;
     border: 1px solid black;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-top: 10px;
     padding: 12px;
     width: 600px;
-}
+    position: relative; 
+  }
 
 .input-box img {
     height: 20px;
@@ -133,87 +150,33 @@ body {
 .episode-desc {
     font-family: 'Montserrat', sans-serif;
 }
-/* 
-*,
-*:before,
-*:after {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-}
 
-body {
-    background: #606639;
-    overflow: hidden;
-    font-family: sans-serif;
+.preference-status {
+    text-align: center;
+    margin-top: 20px;
 }
-
-.tinder {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+  
+  .preferences-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px; 
+    background-color: #4285f4; 
+    color: white; 
+    cursor: pointer;
+    outline: none; 
+    font-size: 16px; 
+    margin-top: 10px; 
+    display: inline-block;
+  }
+  
+  .preference-status-container {
     display: flex;
     flex-direction: column;
-    position: relative;
-    opacity: 0;
-    transition: opacity 0.1s ease-in-out;
-}
-
-.loaded.tinder {
-    opacity: 1;
-}
-
-
-
-.cards {
-    flex-grow: 1;
-    padding-top: 40px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    z-index: 1;
-}
-
-.card {
-    display: inline-block;
-    width: 90vw;
-    max-width: 400px;
-    height: 70vh;
-    background: #FFFFFF;
-    padding-bottom: 40px;
-    border-radius: 8px;
-    overflow: hidden;
-    position: absolute;
-    will-change: transform;
-    transition: all 0.3s ease-in-out;
-    cursor: -webkit-grab;
-    cursor: -moz-grab;
-    cursor: grab;
-}
-
-.moving.card {
-    transition: none;
-    cursor: -webkit-grabbing;
-    cursor: -moz-grabbing;
-    cursor: grabbing;
-}
-
-.card img {
-    max-width: 100%;
-    pointer-events: none;
-}
-
-.card h3 {
-    margin-top: 32px;
-    font-size: 32px;
-    padding: 0 16px;
-    pointer-events: none;
-}
-
-.card p {
-    margin-top: 24px;
-    font-size: 20px;
-    padding: 0 16px;
-    pointer-events: none;
-} */
+    align-items: center;
+  }
+  
+  .preference-status p {
+    font-size: 16px; 
+    color: #333; 
+    margin-bottom: 5px; 
+  }
