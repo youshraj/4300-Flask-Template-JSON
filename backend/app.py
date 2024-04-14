@@ -7,7 +7,7 @@ import pandas as pd
 import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-#from user_preferences_utils import calculate_match_score
+from user_preferences_utils import calculate_match_score
 import urllib.parse
 from flask import jsonify
 
@@ -40,7 +40,7 @@ def load_actors_database():
 
 actors_df = load_actors_database()
 
-def cosine_similarity_search(query):
+def cosine_similarity_search(query, user_traits):
     interest = user_preferences.get('interest', 'both')
 
     if interest == 'men':
@@ -63,10 +63,19 @@ def cosine_similarity_search(query):
 
     top_matches['reasoning'] = similarity_scores.flatten()[top_indices]
 
-    selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning']
+    # Now, calculate the match score based on character traits for the top 5 matches
+    top_matches['match_score'] = top_matches.apply(
+        lambda row: calculate_match_score(user_traits, row['Character Traits']),
+        axis=1
+    )
+
+    # Select required columns to return, including the new match score
+    selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score']
     top_matches = top_matches[selected_columns]
 
+    # Convert DataFrame to JSON and return
     return jsonify(top_matches.to_dict(orient='records'))
+
     
 # Sample search using json with pandas
 def json_search(query):
@@ -113,7 +122,8 @@ def output_page():
 @app.route("/actors")
 def actors_search():
     query = request.args.get("query")
-    return cosine_similarity_search(query)
+    print(user_preferences)
+    return cosine_similarity_search(query, user_preferences["partner_traits"])
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)

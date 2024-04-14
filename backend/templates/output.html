@@ -20,7 +20,7 @@
     </div>
 
     <script>
-    function cardTemplate(name, description, imageUrl, gender, profession, trendsScore, reasoning) {
+    function cardTemplate(name, description, imageUrl, gender, profession, trendsScore, reasoning, matchScore) {
       return `
       <div class='card'>
         <img class="card-img" src="${imageUrl}" alt="Image of ${name}">
@@ -30,7 +30,8 @@
           <p class='title'><b>Profession:</b></p> <p class='card-text'>${profession}</p>
           <p class='title'><b>Popularity Score:</b></p> <p class='card-text'>${trendsScore}</p>
           <p class='card-desc'>${description}</p>
-          <p class='title'><b>Match Reasoning:</b></p> <p class='card-text'>${reasoning}</p>
+          <p class='title'><b>Reasoning:</b></p> <p class='card-text'>${reasoning}</p>
+          <p class='title'><b>Match Score:</b></p> <p class='card-text'>${matchScore}</p>
           </div>
         </div>
         `;
@@ -50,7 +51,8 @@
               row["gender"],
               row["profession"],
               row["Interest Score"], 
-              row['reasoning']
+              row['reasoning'],
+              row['match_score']
             );
             cardContainer.innerHTML += cardHTML;
           });
