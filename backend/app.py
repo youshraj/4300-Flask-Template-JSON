@@ -41,7 +41,6 @@ def load_actors_database():
 actors_df = load_actors_database()
 
 def cosine_similarity_search(query):
-    # Attempt to get the user's gender preference, default to 'both' if not set
     interest = user_preferences.get('interest', 'both')
 
     if interest == 'men':
@@ -49,35 +48,26 @@ def cosine_similarity_search(query):
     elif interest == 'women':
         filtered_df = actors_df[actors_df['gender'] == 'female']
     else:
-        filtered_df = actors_df  # If 'both' or not specified, no gender filter is applied
+        filtered_df = actors_df  
 
-    # Vectorize the data
+    # vectorize  data
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(filtered_df['profession'])
 
-    # Transform query into vector representation
     query_vector = tfidf_vectorizer.transform([query])
-
-    # Calculate cosine similarity between query and all actors in filtered_df
     similarity_scores = cosine_similarity(tfidf_matrix, query_vector)
 
-    # Get indices of top matches
     top_indices = similarity_scores.flatten().argsort()[-5:][::-1]  # Adjust number as needed
 
-    # Get top matches
     top_matches = filtered_df.iloc[top_indices]
 
     top_matches['reasoning'] = similarity_scores.flatten()[top_indices]
 
-    # Select required columns to return
     selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning']
     top_matches = top_matches[selected_columns]
 
-    # Convert DataFrame to JSON and return
     return jsonify(top_matches.to_dict(orient='records'))
     
-    #return top_matches[['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession']].to_json(orient='records')
-
 # Sample search using json with pandas
 def json_search(query):
     matches = []
