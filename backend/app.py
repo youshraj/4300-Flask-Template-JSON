@@ -15,10 +15,8 @@ from flask import jsonify
 # Feel free to use a config.py or settings.py with a global export variable
 os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 
-# Get the directory of the current script
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
-# Specify the path to the JSON file relative to the current script
 json_file_path = os.path.join(current_directory, 'init.json')
 
 # Assuming your JSON data is stored in a file named 'init.json'
@@ -57,19 +55,20 @@ def cosine_similarity_search(query, user_traits):
     query_vector = tfidf_vectorizer.transform([query])
     similarity_scores = cosine_similarity(tfidf_matrix, query_vector)
 
-    top_indices = similarity_scores.flatten().argsort()[-5:][::-1]  # Adjust number as needed
+    top_indices = similarity_scores.flatten().argsort()[-25:][::-1]  # Adjust number as needed
 
     top_matches = filtered_df.iloc[top_indices]
 
     top_matches['reasoning'] = similarity_scores.flatten()[top_indices]
 
-    # Now, calculate the match score based on character traits for the top 5 matches
-    top_matches['match_score'] = top_matches.apply(
-        lambda row: calculate_match_score(user_traits, row['Character Traits']),
-        axis=1
-    )
+    if user_traits != "":
+        top_matches['match_score'] = top_matches.apply(
+            lambda row: calculate_match_score(user_traits, row['Character Traits']),
+            axis=1
+        )
+    else:
+        top_matches['match_score'] = 0
 
-    # Select required columns to return, including the new match score
     selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score']
     top_matches = top_matches[selected_columns]
 
@@ -122,8 +121,10 @@ def output_page():
 @app.route("/actors")
 def actors_search():
     query = request.args.get("query")
-    print(user_preferences)
-    return cosine_similarity_search(query, user_preferences["partner_traits"])
+    if user_preferences:
+        return cosine_similarity_search(query, user_preferences["partner_traits"])
+    else:
+        return cosine_similarity_search(query, "")
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)
