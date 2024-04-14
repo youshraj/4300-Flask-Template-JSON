@@ -7,7 +7,6 @@
   <title>Swipe Cards</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
-    /* Additional CSS styles */
     .tinder {
       display: flex;
       flex-direction: column;
@@ -30,21 +29,25 @@
     #resultsButton {
       display: none;
     }
-    
+
     .card {
-      display: none;
       margin: 20px;
       padding: 20px;
       background-color: #fff;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      max-width: 1200px;
+      max-width: 300px;
       text-align: center;
+      display: block; 
     }
 
     .card img {
       max-width: 100%;
       border-radius: 10px;
+    }
+
+    .container {
+      padding: 2px 16px;
     }
   </style>
 </head>
@@ -69,52 +72,46 @@
     var swipeCount = 0;
     var maxSwipes = 15;
 
-    function createCard(card) {
-      var cardElement = document.createElement('div');
+    function createCard(cardData) {
+      let cardElement = document.createElement('div');
       cardElement.className = 'card';
-      var imgElement = document.createElement('img');
-      imgElement.src = card.Image;
-      var nameElement = document.createElement('h3');
-      nameElement.textContent = card.Name;
-      var summaryElement = document.createElement('p');
-      summaryElement.textContent = 'Summary: ' + card.Summary;
-      var personalLifeElement = document.createElement('p');
-      personalLifeElement.textContent = 'Personal Life: ' + card.PersonalLife;
-      var genderElement = document.createElement('p');
-      genderElement.textContent = 'Gender: ' + card.Gender;
-      var professionElement = document.createElement('p');
-      professionElement.textContent = 'Profession: ' + card.Profession;
-      var traitsElement = document.createElement('p');
-      traitsElement.textContent = 'Character Traits: ' + card.CharacterTraits;
-      cardElement.appendChild(imgElement);
-      cardElement.appendChild(nameElement);
-      cardElement.appendChild(summaryElement);
-      cardElement.appendChild(personalLifeElement);
-      cardElement.appendChild(genderElement);
-      cardElement.appendChild(professionElement);
-      cardElement.appendChild(traitsElement);
+      cardElement.innerHTML = `
+        <div class="container">
+          <h4><b>${cardData['Celebrity Name']}</b></h4>
+          <p>Profession: ${cardData.profession}</p>
+        </div>
+      `;
       return cardElement;
     }
 
-    function initCards() {
-      var currentCard = createCard(cardsData[currentCardIndex]);
-      cardsContainer.innerHTML = '';
-      cardsContainer.appendChild(currentCard);
-      currentCard.style.display = 'block';
+    function fetchAndDisplayMatches() {
+      const query = localStorage.getItem('query'); 
+      if (!query) {
+        console.error('No query found.');
+        return;
+      }
+      fetch(`/actors?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+          cardsData = data; 
+          displayNextCard();
+        });
     }
 
-    fetch('/get_profiles')
-      .then(response => response.json())
-      .then(data => {
-        cardsData = data;
-        initCards();
-      });
+    function displayNextCard() {
+      if (currentCardIndex < cardsData.length) {
+        const cardData = cardsData[currentCardIndex];
+        const cardElement = createCard(cardData);
+        cardsContainer.innerHTML = ''; 
+        cardsContainer.appendChild(cardElement); 
+      }
+    }
 
     function swipeLeft() {
       if (swipeCount < maxSwipes) {
-        if (currentCardIndex > 0) {
+        if (currentCardIndex >= 0) {
           currentCardIndex++;
-          initCards();
+          displayNextCard();
           swipeCount++;
         }
         if (swipeCount === maxSwipes) {
@@ -128,7 +125,7 @@
       if (swipeCount < maxSwipes) {
         if (currentCardIndex < cardsData.length - 1) {
           currentCardIndex++;
-          initCards();
+          displayNextCard();
           swipeCount++;
         }
         if (swipeCount === maxSwipes) {
@@ -154,6 +151,7 @@
       };
       xhr.send(JSON.stringify({ direction: direction }));
   }
+  window.addEventListener('load', fetchAndDisplayMatches);
   </script>
 
 
