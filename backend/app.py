@@ -1,6 +1,7 @@
 import json
 import os
-from flask import Flask, render_template, request, redirect, url_for
+import csv
+from flask import Flask, render_template, request, redirect, url_for,jsonify
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
@@ -125,6 +126,24 @@ def actors_search():
         return cosine_similarity_search(query, user_preferences["partner_traits"])
     else:
         return cosine_similarity_search(query, "")
+
+@app.route("/get_profiles")
+def get_profiles():
+    actors_data = []
+
+    with open('backend/data/final_celeb_info.csv', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            actors_data.append({
+                'Name': row['Celebrity Name'],
+                'Summary': row['Wikipedia Summary'],
+                'PersonalLife': row['Personal Life'],
+                'Image': row['Image URL'],
+                'Gender': row['gender'],
+                'Profession': row['profession'],
+                'CharacterTraits': row['Character Traits']
+            })
+    return jsonify(actors_data)
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)
