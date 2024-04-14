@@ -10,7 +10,7 @@ body {
     padding-top: 20px;
     min-height: 100%;
     position: relative;
-    padding-bottom: 50px;
+    padding-bottom: 30px;
     position: absolute;
     top: 0;
     left: 0;
@@ -180,3 +180,33 @@ body {
     color: #333; 
     margin-bottom: 5px; 
   }
+
+  .how-it-works {
+    text-align: center;
+    padding: 20px;
+    background-color: #ffe0f0;
+    border-radius: 15px;
+    margin-top: 0px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.how-it-works h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.how-it-works p {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.how-it-works ol {
+    text-align: left;
+    display: inline-block;
+    text-align: start;
+}

@@ -31,9 +31,13 @@
         {% if preferences and preferences.interest and preferences.user_traits and preferences.partner_traits %}
           <p>Preference Status: Set</p>
           <p>
-            Preferences: Interested in {{ preferences.interest }}, Traits: {{
-            preferences.user_traits|join(", ") }}, Looking for: {{
-            preferences.partner_traits|join(", ") }}
+            Interested in {{ preferences.interest }}
+          </p>
+          <p>
+            Your personality traits:  {{ preferences.user_traits|join(", ") }}
+          </p>
+          <p>
+            Looking for: in {{ preferences.partner_traits|join(", ") }}
           </p>
         {% else %}
           <p>Preference Status: Not yet set</p>
@@ -43,7 +47,23 @@
       
     </div>
     <div id="answer-box"></div>
+    <div class="how-it-works">
+      <h2>How This Works</h2>
+      <p>
+          Find your celebrity match(es) in three simple steps:
+          <ol>
+              <li>Set your preferences and tell us a bit about yourself.</li>
+              <li>Use the search bar to describe the kind of celebrity you're interested in.</li>
+              <li>Start swiping so we can find your best match!</li>
+          </ol>
+      </p>
+      <p>
+          We're incredibly excited to showcase our project, and please enjoy this website to use for fun or a laugh!
+      </p>
+    </div>
   </div>
+  
+
 
   <script>
     function sendFocus() {
