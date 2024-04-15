@@ -1,37 +1,49 @@
-from flask import Flask, request, redirect, url_for
-import requests
-from sklearn.feature_extraction.text import CountVectorizer
+import pandas as pd
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+import os
 
+current_directory = os.path.dirname(os.path.abspath(__file__))
+csv_file_path = os.path.join(current_directory, 'data/final_celeb_info.csv')
 
+# Read the CSV file into a DataFrame
+celeb_df = pd.read_csv(csv_file_path)
 
-def update_query_vector(query_vector, swipe_direction):
+def map_names_to_professions(names, celeb_df):
+    professions = []
+    for name in names:
+        profession = celeb_df.loc[celeb_df['Celebrity Name'] == name, 'profession'].values
+        if profession.size > 0:
+            professions.append(profession[0])
+    return professions
 
-    updated_query_vector = {}
+def extract_keywords_from_updated_vector(updated_query_vec, vectorizer, top_n=5):
+    feature_array = np.array(vectorizer.get_feature_names_out())
+    sorted_indices = np.argsort(updated_query_vec.flatten())[::-1]
+    top_indices = sorted_indices[:top_n]
+    top_keywords = feature_array[top_indices]
+    return top_keywords.tolist()
 
-    # Assign weights to each term
-    for term in query_vector:
-        # Initialize the weight for the term to 1
-        updated_query_vector[term] = []
+def update_query_vector(query_profession, liked_names, disliked_names, celeb_df):
+    liked_professions = map_names_to_professions(liked_names, celeb_df)
+    disliked_professions = map_names_to_professions(disliked_names, celeb_df)
 
-        # Assign weight for each value in the term list
-        for value in query_vector[term]:
-            updated_query_vector[term].append((value, 1))
+    corpus = [query_profession] + liked_professions + disliked_professions
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(corpus).toarray()
 
-    # Update query vector based on swipe direction
-    if swipe_direction == 'left':
-        # Decrease the weight by swipe_weight for each term
-        for term in updated_query_vector:
-            for i, (value, weight) in enumerate(updated_query_vector[term]):
-                updated_query_vector[term][i] = (value, weight - .5)
-        print(updated_query_vector)
-    elif swipe_direction == 'right':
-    
-        # Increase the weight by swipe_weight for each term
-        for term in updated_query_vector:
-            for i, (value, weight) in enumerate(updated_query_vector[term]):
-                updated_query_vector[term][i] = (value, weight + .5)
-        print(updated_query_vector)
-    print(updated_query_vector)
-    return updated_query_vector
-   
+    original_query_vec = X[0]
 
+    liked_vec, disliked_vec = np.zeros_like(original_query_vec), np.zeros_like(original_query_vec)
+    if liked_professions:
+        liked_vec = np.mean(X[1:len(liked_professions)+1], axis=0)
+    if disliked_professions:
+        start_idx = 1 + len(liked_professions)
+        disliked_vec = np.mean(X[start_idx:start_idx+len(disliked_professions)], axis=0)
+
+    alpha, beta, gamma = 1, 0.75, 0.15
+    updated_query_vec = alpha * original_query_vec + beta * liked_vec - gamma * disliked_vec
+
+    top_keywords = extract_keywords_from_updated_vector(updated_query_vec, vectorizer)
+
+    return ' '.join(top_keywords)

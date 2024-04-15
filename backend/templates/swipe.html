@@ -59,7 +59,7 @@
     <div class="buttons">
       <button id="swipeLeftButton" onclick="swipeLeft()">Swipe Left</button>
       <button id="swipeRightButton" onclick="swipeRight()">Swipe Right</button>
-      <button id="resultsButton" onclick="goToOutput()">Get Your Results!</button>
+      <button id="resultsButton" onclick="submitSwipesAndCheckResults()">Get Your Results!</button>
     </div>
   </div>
 
@@ -106,37 +106,67 @@
         cardsContainer.appendChild(cardElement); 
       }
     }
-
     function swipeLeft() {
-      if (swipeCount < maxSwipes) {
-        if (currentCardIndex >= 0) {
-          currentCardIndex++;
-          displayNextCard();
-          swipeCount++;
-        }
-        if (swipeCount === maxSwipes) {
-          document.getElementById('resultsButton').style.display = 'block';
-        }
-        sendSwipeRequest('left');
-      }
+    if (currentCardIndex < cardsData.length) {
+        let celebName = cardsData[currentCardIndex]['Celebrity Name']; // Use the celebrity's name as the identifier
+        let dislikes = JSON.parse(localStorage.getItem('dislikedCelebrities') || '[]');
+        dislikes.push(celebName);
+        localStorage.setItem('dislikedCelebrities', JSON.stringify(dislikes));
+
+        moveToNextCard();
     }
+  }
 
     function swipeRight() {
-      if (swipeCount < maxSwipes) {
-        if (currentCardIndex < cardsData.length - 1) {
-          currentCardIndex++;
-          displayNextCard();
-          swipeCount++;
-        }
-        if (swipeCount === maxSwipes) {
-          document.getElementById('resultsButton').style.display = 'block';
-        }
-        sendSwipeRequest('right');
+      if (currentCardIndex < cardsData.length) {
+        let celebName = cardsData[currentCardIndex]['Celebrity Name']; // Use the celebrity's name as the identifier
+        let likes = JSON.parse(localStorage.getItem('likedCelebrities') || '[]');
+        likes.push(celebName);
+        localStorage.setItem('likedCelebrities', JSON.stringify(likes));
+
+        moveToNextCard();
       }
     }
 
-    function goToOutput() {
-      window.location.href = "/output";
+    function moveToNextCard() {
+      currentCardIndex++;
+      swipeCount++;
+      displayNextCard();
+      if (swipeCount === maxSwipes || currentCardIndex >= cardsData.length) {
+        document.getElementById('resultsButton').style.display = 'block';
+      }
+    }
+
+    function submitSwipesAndCheckResults() {
+      const postData = {
+            likes: JSON.parse(localStorage.getItem('likedCelebrities') || '[]'),
+            dislikes: JSON.parse(localStorage.getItem('dislikedCelebrities') || '[]'),
+        };
+
+        fetch('/swipe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(postData),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to submit swipes');
+            }
+            return fetch('/get_updated_matches');
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch updated matches');
+            }
+            return response.json();
+        })
+        .then(updatedMatches => {
+            localStorage.setItem('data', JSON.stringify(updatedMatches));
+            localStorage.removeItem('likedCelebrities');
+            localStorage.removeItem('dislikedCelebrities');
+            window.location.href = '/output';
+        })
+        .catch(error => console.error('Error:', error));
     }
 
     function sendSwipeRequest(direction) {

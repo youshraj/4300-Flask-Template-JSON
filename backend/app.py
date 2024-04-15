@@ -1,7 +1,7 @@
 import json
 import os
 import csv
-from flask import Flask, render_template, request, redirect, url_for,jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
@@ -31,6 +31,8 @@ app = Flask(__name__)
 CORS(app)
 
 user_preferences = {}
+current_query = ""
+updated_query_global = ""
 
 # Load actors database
 def load_actors_database():
@@ -63,13 +65,14 @@ def cosine_similarity_search(query, user_traits):
 
     top_matches['reasoning'] = similarity_scores.flatten()[top_indices]
 
-    if user_traits != "":
-        top_matches['match_score'] = top_matches.apply(
-            lambda row: calculate_match_score(user_traits, row['Character Traits']),
-            axis=1
-        )
-    else:
-        top_matches['match_score'] = 0
+
+    # if user_traits != "":
+    #     top_matches['match_score'] = top_matches.apply(
+    #         lambda row: calculate_match_score(user_traits, row['Character Traits']),
+    #         axis=1
+    #     )
+    # else:
+    top_matches['match_score'] = 0
 
     selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score']
     top_matches = top_matches[selected_columns]
@@ -93,10 +96,6 @@ def profiles():
                 'character Traits': row['Character Traits']
             })
     return jsonify(actors_data) 
-  
-
-
-
 
 # Sample search using json with pandas
 def json_search(query):
@@ -125,8 +124,6 @@ def save_preferences():
         'partner_traits': partner_traits
     }
 
-    # Redirect to the home page
-
     return redirect(url_for('home'))  
 
 @app.route("/")
@@ -137,17 +134,29 @@ def home():
 def swipe_page():
     return render_template('swipe.html')
 
+@app.route('/get_updated_matches')
+def get_updated_matches():
+    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []))
+    return updated_matches
+
 @app.route('/output')
 def output_page():
-    return render_template('output.html')
-
+    global updated_query_global
+    if updated_query_global:
+        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []))
+        return render_template('output.html', matches=updated_matches)
+    else:
+        return "No updated query available."
+    
 @app.route("/actors")
 def actors_search():
+    global current_query
     query = request.args.get("query")
+    current_query = query
     if user_preferences:
-        return cosine_similarity_search(query, user_preferences["partner_traits"])
+        return cosine_similarity_search(current_query, user_preferences["partner_traits"])
     else:
-        return cosine_similarity_search(query, "")
+        return cosine_similarity_search(current_query, "")
 
 @app.route("/get_profiles")
 def get_profiles():
@@ -155,11 +164,18 @@ def get_profiles():
 
 @app.route('/swipe', methods=['POST'])
 def handle_swipe():
+    global current_query, updated_query_global
     data = request.get_json()
-    swipe_direction = data.get('direction')
-    print("Swipe direction:", swipe_direction)
-    update_query_vector(user_preferences, swipe_direction)
-    return "Swipe received successfully."
+    liked_names = data.get('likes', []) 
+    disliked_names = data.get('dislikes', [])
+    celeb_df = load_actors_database()
+
+    updated_query = update_query_vector(current_query, liked_names, disliked_names, celeb_df)
+
+    current_query = updated_query
+    updated_query_global = updated_query
+
+    return jsonify({"message": "Query vector updated successfully", "updated_query": updated_query})
 
 
 if 'DB_NAME' not in os.environ:
