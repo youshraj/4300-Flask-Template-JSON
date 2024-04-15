@@ -77,25 +77,34 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     
     common_words_list = [[] for _ in range(top_n)]
 
-    if user_preferences:
-        for i, summary in enumerate(top_matches['Wikipedia Summary']):
-            common_words_for_d = []
-            for d in user_preferences["partner_traits"]:
-                words1 = set(d.split())
-                words2 = set(summary.split())
+    partner_traits = user_preferences.get("partner_traits", [])
+    partner_traits = partner_traits.split(',')
+    common_words_list = []
 
-                common_words = words1.intersection(words2)
-                if common_words:
-                    common_words_for_d.append(list(common_words))
-                else:
-                    common_words_for_d.append('None')
+    if partner_traits:
+        for summary in top_matches['Character Traits']:
+            common_words_for_summary = set() 
+            clean_summary = summary.strip().rstrip(',').rstrip('.').lower()
+            word_list = clean_summary.split(',')
+            cleaned_words = [word.strip() for word in word_list]
+            summary_words = set(cleaned_words)
+
             
-            # Assign the modified list to common_words_list at index i
-            common_words_list[i] = common_words_for_d    
-        top_matches['common_words'] = common_words_list.copy()
-    else:
-        top_matches['common_words'] = common_words_list.copy()
+            for trait in partner_traits:
+                trait_words = set(trait.lower().split()) 
+                common_words = summary_words.intersection(trait_words)
+                
+                if common_words:
+                    common_words_for_summary.update(common_words)
+            
+            if common_words_for_summary:
+                common_words_list.append(list(common_words_for_summary))
+            else:
+                common_words_list.append(['None']) 
 
+        top_matches['common_words'] = common_words_list
+    else:
+        top_matches['common_words'] = [['None'] for _ in range(len(top_matches))]
 
     selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score', 'common_words']
     top_matches = top_matches[selected_columns]

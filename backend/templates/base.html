@@ -28,16 +28,16 @@
       
 
       <div class="preference-status">
-        {% if preferences and preferences.interest and preferences.user_traits and preferences.partner_traits %}
+        {% if preferences %}
           <p>Preference Status: Set</p>
           <p>
             Interested in {{ preferences.interest }}
           </p>
           <p>
-            Your personality traits:  {{ preferences.user_traits|join(", ") }}
+            Your personality traits:  {{ preferences.user_traits }}
           </p>
           <p>
-            Looking for: {{ preferences.partner_traits|join(", ") }}
+            Looking for: {{ preferences.partner_traits }}
           </p>
         {% else %}
           <p>Preference Status: Not yet set</p>
