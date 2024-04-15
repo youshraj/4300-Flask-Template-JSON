@@ -43,7 +43,7 @@ def load_actors_database():
 
 actors_df = load_actors_database()
 
-def cosine_similarity_search(query, user_traits):
+def cosine_similarity_search(query, user_traits, top_n):
     interest = user_preferences.get('interest', 'both')
 
     if interest == 'men':
@@ -60,7 +60,7 @@ def cosine_similarity_search(query, user_traits):
     query_vector = tfidf_vectorizer.transform([query])
     similarity_scores = cosine_similarity(tfidf_matrix, query_vector)
 
-    top_indices = similarity_scores.flatten().argsort()[-25:][::-1]  # Adjust number as needed
+    top_indices = similarity_scores.flatten().argsort()[-top_n:][::-1] 
 
     top_matches = filtered_df.iloc[top_indices]
 
@@ -75,10 +75,9 @@ def cosine_similarity_search(query, user_traits):
     # else:
     top_matches['match_score'] = 0
     
-    common_words_list = [[] for _ in range(25)]
+    common_words_list = [[] for _ in range(top_n)]
 
     if user_preferences:
-        
         for i, summary in enumerate(top_matches['Wikipedia Summary']):
             common_words_for_d = []
             for d in user_preferences["partner_traits"]:
@@ -96,19 +95,8 @@ def cosine_similarity_search(query, user_traits):
         top_matches['common_words'] = common_words_list.copy()
 
 
-
-
-
-
-
-
     selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score', 'common_words']
     top_matches = top_matches[selected_columns]
-
-
-
-
-    # Convert DataFrame to JSON and return
     return jsonify(top_matches.to_dict(orient='records'))
 
 # get profiles for swiping
@@ -167,14 +155,14 @@ def swipe_page():
 
 @app.route('/get_updated_matches')
 def get_updated_matches():
-    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []))
+    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5)
     return updated_matches
 
 @app.route('/output')
 def output_page():
     global updated_query_global
     if updated_query_global:
-        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []))
+        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5)
         return render_template('output.html', matches=updated_matches)
     else:
         return "No updated query available."
@@ -185,9 +173,9 @@ def actors_search():
     query = request.args.get("query")
     current_query = query
     if user_preferences:
-        return cosine_similarity_search(current_query, user_preferences["partner_traits"])
+        return cosine_similarity_search(current_query, user_preferences["partner_traits"], 15)
     else:
-        return cosine_similarity_search(current_query, "")
+        return cosine_similarity_search(current_query, "", 15)
 
 @app.route("/get_profiles")
 def get_profiles():
