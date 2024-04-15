@@ -89,6 +89,8 @@ def cosine_similarity_search(query, user_traits, top_n, output):
                 common_words = words1.intersection(words2)
                 if common_words:
                     common_words_for_d.append(list(common_words))
+                else:
+                    common_words_for_d.append('None')
             
             # Assign the modified list to common_words_list at index i
             common_words_list[i] = common_words_for_d    
