@@ -26,7 +26,9 @@
       cursor: pointer;
     }
 
-    #resultsButton {
+    #resultsButton,
+    #swipeLeftButton,
+    #swipeRightButton {
       display: none;
     }
 
@@ -38,7 +40,7 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       max-width: 300px;
       text-align: center;
-      display: block; 
+      display: block;
     }
 
     .card img {
@@ -85,16 +87,22 @@
     }
 
     function fetchAndDisplayMatches() {
-      const query = localStorage.getItem('query'); 
+      const query = localStorage.getItem('query');
       if (!query) {
-        console.error('No query found.');
+        cardsContainer.innerHTML = '<div class="error-message"><p>No query found. Please <a href="/">start a new search</a>.</p></div>';
         return;
       }
       fetch(`/actors?query=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
-          cardsData = data; 
-          displayNextCard();
+          if (data.length > 0) {
+            cardsData = data;
+            document.getElementById('swipeLeftButton').style.display = 'inline';
+            document.getElementById('swipeRightButton').style.display = 'inline';
+            displayNextCard();
+          } else {
+            cardsContainer.innerHTML = '<div class="error-message"><p>No matches found. Please <a href="/new-search">try a different query</a>.</p></div>';
+          }
         });
     }
 
@@ -102,20 +110,20 @@
       if (currentCardIndex < cardsData.length) {
         const cardData = cardsData[currentCardIndex];
         const cardElement = createCard(cardData);
-        cardsContainer.innerHTML = ''; 
-        cardsContainer.appendChild(cardElement); 
+        cardsContainer.innerHTML = '';
+        cardsContainer.appendChild(cardElement);
       }
     }
     function swipeLeft() {
-    if (currentCardIndex < cardsData.length) {
+      if (currentCardIndex < cardsData.length) {
         let celebName = cardsData[currentCardIndex]['Celebrity Name']; // Use the celebrity's name as the identifier
         let dislikes = JSON.parse(localStorage.getItem('dislikedCelebrities') || '[]');
         dislikes.push(celebName);
         localStorage.setItem('dislikedCelebrities', JSON.stringify(dislikes));
 
         moveToNextCard();
+      }
     }
-  }
 
     function swipeRight() {
       if (currentCardIndex < cardsData.length) {
@@ -139,32 +147,32 @@
 
     function submitSwipesAndCheckResults() {
       const postData = {
-            likes: JSON.parse(localStorage.getItem('likedCelebrities') || '[]'),
-            dislikes: JSON.parse(localStorage.getItem('dislikedCelebrities') || '[]'),
-        };
+        likes: JSON.parse(localStorage.getItem('likedCelebrities') || '[]'),
+        dislikes: JSON.parse(localStorage.getItem('dislikedCelebrities') || '[]'),
+      };
 
-        fetch('/swipe', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(postData),
+      fetch('/swipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to submit swipes');
+          }
+          return fetch('/get_updated_matches');
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to submit swipes');
-            }
-            return fetch('/get_updated_matches');
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch updated matches');
-            }
-            return response.json();
+          if (!response.ok) {
+            throw new Error('Failed to fetch updated matches');
+          }
+          return response.json();
         })
         .then(updatedMatches => {
-            localStorage.setItem('data', JSON.stringify(updatedMatches));
-            localStorage.removeItem('likedCelebrities');
-            localStorage.removeItem('dislikedCelebrities');
-            window.location.href = '/output';
+          localStorage.setItem('data', JSON.stringify(updatedMatches));
+          localStorage.removeItem('likedCelebrities');
+          localStorage.removeItem('dislikedCelebrities');
+          window.location.href = '/output';
         })
         .catch(error => console.error('Error:', error));
     }
@@ -174,14 +182,26 @@
       var xhr = new XMLHttpRequest();
       xhr.open("POST", "/swipe", true);
       xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-              console.log("Swipe request sent successfully.");
-          }
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          console.log("Swipe request sent successfully.");
+        }
       };
       xhr.send(JSON.stringify({ direction: direction }));
-  }
-  window.addEventListener('load', fetchAndDisplayMatches);
+    }
+    window.addEventListener('load', fetchAndDisplayMatches);
+
+    document.addEventListener('keydown', function (event) {
+      if (document.getElementById('swipeLeftButton').style.display !== 'none' &&
+        document.getElementById('swipeRightButton').style.display !== 'none') {
+        if (event.keyCode === 37) { // Left arrow key
+          swipeLeft();
+        } else if (event.keyCode === 39) { // Right arrow key
+          swipeRight();
+        }
+      }
+    });
+
   </script>
 
 
