@@ -3,7 +3,7 @@ from pytrends.request import TrendReq
 from pytrends.exceptions import ResponseError
 import pandas as pd
 
-def get_celebrity_interest(celebrity_name, retries=6):
+def get_celebrity_interest(celebrity_name, retries=7):
     attempt = 0
     #time.sleep(60)
     while attempt < retries:
@@ -26,7 +26,7 @@ def get_celebrity_interest(celebrity_name, retries=6):
             return popularity_score
     raise Exception("Failed after multiple retries.")
 
-actors_df = pd.read_csv('cleaned_celeb_info.csv')
+actors_df = pd.read_csv('final_celeb_info.csv')
 interest_scores = []
 
 
@@ -39,5 +39,5 @@ for index, row in actors_df.iterrows():
 actors_df['Interest Score'] = interest_scores
 
 #overwrites existing file adding new column
-actors_df.to_csv('cleaned_celeb_info.csv', index=False)
+actors_df.to_csv('final_celeb_info.csv', index=False)
 
