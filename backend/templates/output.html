@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>ChronoMingle</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap" rel="stylesheet" />
-</head>
-<body>
-    <div class="full-body-container">
-        <div class="logo-container">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" />
-        </div>
-        <div id="card-container" class="card-container">
-        </div>
-        <div>
-            <a href="/"><button class="preferences-button">Back To Home</button></a>
-        </div>
-    </div>
 
-    <script>
-    function cardTemplate(name, description, imageUrl, gender, profession, trendsScore, reasoning, matchScore) {
+<head>
+  <title>ChronoMingle</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <div class="full-body-container">
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" />
+    </div>
+    <div id="card-container" class="card-container">
+    </div>
+    <div>
+      <a href="/"><button class="preferences-button">Back To Home</button></a>
+    </div>
+  </div>
+
+  <script>
+    function cardTemplate(name, description, imageUrl, gender, profession, trendsScore, reasoning, matchScore, common_words) {
       return `
       <div class='card'>
         <img class="card-img" src="${imageUrl}" alt="Image of ${name}">
@@ -32,35 +35,38 @@
           <p class='card-desc'>${description}</p>
           <p class='title'><b>Reasoning:</b></p> <p class='card-text'>${reasoning}</p>
           <p class='title'><b>Match Score:</b></p> <p class='card-text'>${matchScore}</p>
+          <p class='title'><b>These are the traits that you were looking for in a person that they have:</b></p> <p class='card-text'>${common_words}</p>
           </div>
         </div>
         `;
+    }
+    function renderCards() {
+      const data = localStorage.getItem("data");
+      if (data) {
+        const output = JSON.parse(data);
+        const cardContainer = document.getElementById("card-container");
+        output.forEach((row) => {
+          let firstSentenceRegex = /^.*?[.!?](?=\s|$)/;
+          let firstSentence = row["Wikipedia Summary"].match(firstSentenceRegex)[0];
+          const cardHTML = cardTemplate(
+            row["Celebrity Name"],
+            firstSentence,
+            row["Image URL"],
+            row["gender"],
+            row["profession"],
+            row["Interest Score"],
+            row['reasoning'],
+            row['match_score'],
+            row['common_words']
+          );
+          cardContainer.innerHTML += cardHTML;
+        });
+      } else {
+        document.getElementById("card-container").innerHTML = "<p>No results to display.</p>";
       }
-      function renderCards() {
-        const data = localStorage.getItem("data");
-        if(data) {
-          const output = JSON.parse(data);
-          const cardContainer = document.getElementById("card-container");
-          output.forEach((row) => {
-            let firstSentenceRegex = /^.*?[.!?](?=\s|$)/;
-            let firstSentence = row["Wikipedia Summary"].match(firstSentenceRegex)[0];
-            const cardHTML = cardTemplate(
-              row["Celebrity Name"],
-              firstSentence,
-              row["Image URL"],
-              row["gender"],
-              row["profession"],
-              row["Interest Score"], 
-              row['reasoning'],
-              row['match_score']
-            );
-            cardContainer.innerHTML += cardHTML;
-          });
-        } else {
-          document.getElementById("card-container").innerHTML = "<p>No results to display.</p>";
-        }
-      }
-      window.addEventListener("load", renderCards);
-    </script>
+    }
+    window.addEventListener("load", renderCards);
+  </script>
 </body>
+
 </html>

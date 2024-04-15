@@ -12,6 +12,7 @@ from user_preferences_utils import calculate_match_score,find_top_matches
 from rocchios import update_query_vector
 import urllib.parse
 from flask import jsonify
+import numpy as np
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -73,9 +74,39 @@ def cosine_similarity_search(query, user_traits):
     #     )
     # else:
     top_matches['match_score'] = 0
+    
+    common_words_list = [[] for _ in range(25)]
 
-    selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score']
+    if user_preferences:
+        
+        for i, summary in enumerate(top_matches['Wikipedia Summary']):
+            common_words_for_d = []
+            for d in user_preferences["partner_traits"]:
+                words1 = set(d.split())
+                words2 = set(summary.split())
+
+                common_words = words1.intersection(words2)
+                if common_words:
+                    common_words_for_d.append(list(common_words))
+            
+            # Assign the modified list to common_words_list at index i
+            common_words_list[i] = common_words_for_d    
+        top_matches['common_words'] = common_words_list.copy()
+    else:
+        top_matches['common_words'] = common_words_list.copy()
+
+
+
+
+
+
+
+
+    selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score', 'common_words']
     top_matches = top_matches[selected_columns]
+
+
+
 
     # Convert DataFrame to JSON and return
     return jsonify(top_matches.to_dict(orient='records'))
