@@ -8,7 +8,7 @@ import pandas as pd
 import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from user_preferences_utils import calculate_match_score,find_top_matches
+from user_preferences_utils import calculate_match_score
 from rocchios import update_query_vector
 import urllib.parse
 from flask import jsonify
@@ -43,7 +43,7 @@ def load_actors_database():
 
 actors_df = load_actors_database()
 
-def cosine_similarity_search(query, user_traits, top_n):
+def cosine_similarity_search(query, user_traits, top_n, output):
     interest = user_preferences.get('interest', 'both')
 
     if interest == 'men':
@@ -52,7 +52,7 @@ def cosine_similarity_search(query, user_traits, top_n):
         filtered_df = actors_df[actors_df['gender'] == 'female']
     else:
         filtered_df = actors_df  
-
+    print(actors_df.columns)
     # vectorize  data
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(filtered_df['profession'])
@@ -64,16 +64,18 @@ def cosine_similarity_search(query, user_traits, top_n):
 
     top_matches = filtered_df.iloc[top_indices]
 
-    top_matches['reasoning'] = similarity_scores.flatten()[top_indices]
-
-
-    # if user_traits != "":
-    #     top_matches['match_score'] = top_matches.apply(
-    #         lambda row: calculate_match_score(user_traits, row['Character Traits']),
-    #         axis=1
-    #     )
-    # else:
-    top_matches['match_score'] = 0
+    if not output:
+        top_matches['reasoning'] = ""
+        top_matches['match_score'] = 0
+    else:
+        print(top_matches)
+        top_matches['match_score'] = top_matches.apply(
+            lambda row: calculate_match_score(user_traits, row['Character Traits']),
+            axis=1
+        )
+        top_matches['reasoning'] = top_matches.apply(
+            lambda row: f"You are interested in {', '.join(user_traits)} and this celebrity is described as {row['Character Traits']}.", axis=1
+        )
     
     common_words_list = [[] for _ in range(top_n)]
 
@@ -155,14 +157,14 @@ def swipe_page():
 
 @app.route('/get_updated_matches')
 def get_updated_matches():
-    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5)
+    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
     return updated_matches
 
 @app.route('/output')
 def output_page():
     global updated_query_global
     if updated_query_global:
-        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5)
+        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
         return render_template('output.html', matches=updated_matches)
     else:
         return "No updated query available."
@@ -173,9 +175,9 @@ def actors_search():
     query = request.args.get("query")
     current_query = query
     if user_preferences:
-        return cosine_similarity_search(current_query, user_preferences["partner_traits"], 15)
+        return cosine_similarity_search(current_query, user_preferences["partner_traits"], 15, False)
     else:
-        return cosine_similarity_search(current_query, "", 15)
+        return cosine_similarity_search(current_query, "", 15, False)
 
 @app.route("/get_profiles")
 def get_profiles():
