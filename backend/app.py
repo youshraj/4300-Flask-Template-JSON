@@ -52,7 +52,6 @@ def cosine_similarity_search(query, user_traits, top_n, output):
         filtered_df = actors_df[actors_df['gender'] == 'female']
     else:
         filtered_df = actors_df  
-    print(actors_df.columns)
     # vectorize  data
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(filtered_df['profession'])
@@ -68,13 +67,12 @@ def cosine_similarity_search(query, user_traits, top_n, output):
         top_matches['reasoning'] = ""
         top_matches['match_score'] = 0
     else:
-        print(top_matches)
         top_matches['match_score'] = top_matches.apply(
             lambda row: calculate_match_score(user_traits, row['Character Traits']),
             axis=1
         )
         top_matches['reasoning'] = top_matches.apply(
-            lambda row: f"You are interested in {', '.join(user_traits)} and this celebrity is described as {row['Character Traits']}.", axis=1
+            lambda row: f"You are interested in {user_traits} and this celebrity is described as {row['Character Traits']}.", axis=1
         )
     
     common_words_list = [[] for _ in range(top_n)]
@@ -138,8 +136,8 @@ def save_preferences():
     global user_preferences
     # extract prefs 
     interest = request.form['interest']
-    user_traits = request.form['user_traits'].split(',')
-    partner_traits = request.form['partner_traits'].split(',')
+    user_traits = request.form['user_traits']
+    partner_traits = request.form['partner_traits']
 
     user_preferences = {
         'interest': interest,
