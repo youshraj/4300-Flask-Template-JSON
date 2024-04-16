@@ -106,7 +106,7 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     else:
         top_matches['common_words'] = [['None'] for _ in range(len(top_matches))]
 
-    selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score', 'common_words']
+    selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score', 'common_words', 'Interest Score']
     top_matches = top_matches[selected_columns]
     return jsonify(top_matches.to_dict(orient='records'))
 
