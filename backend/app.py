@@ -13,6 +13,7 @@ from rocchios import update_query_vector
 import urllib.parse
 from flask import jsonify
 import numpy as np
+from svd import svd
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -42,6 +43,20 @@ def load_actors_database():
     return pd.read_csv(csv_file_path)
 
 actors_df = load_actors_database()
+
+def svd_search(actors_df, query, user_traits, top_n):
+    interest = user_preferences.get('interest', 'both')
+
+    if interest == 'men':
+        filtered_df = actors_df[actors_df['gender'] == 'male']
+    elif interest == 'women':
+        filtered_df = actors_df[actors_df['gender'] == 'female']
+    else:
+        filtered_df = actors_df  
+    
+    query = query + user_traits #can add profession to query also
+    return svd(filtered_df, query, top_n)
+
 
 def cosine_similarity_search(query, user_traits, top_n, output):
     interest = user_preferences.get('interest', 'both')
