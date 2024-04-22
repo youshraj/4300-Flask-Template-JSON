@@ -31,10 +31,13 @@
     #swipeRightButton {
       display: none;
     }
+
     .swipe-count {
       position: absolute;
-      top: 10px; /* Adjust the top position as needed */
-      left: 10px; /* Adjust the right position as needed */
+      top: 10px;
+      /* Adjust the top position as needed */
+      left: 10px;
+      /* Adjust the right position as needed */
       background-color: rgba(255, 255, 255, 0.8);
       padding: 5px 10px;
       border-radius: 5px;
@@ -80,7 +83,7 @@
     'use strict';
 
     var cardsContainer = document.getElementById('cardsContainer');
-    var swipeCountElement = document.getElementById('swipeCount'); 
+    var swipeCountElement = document.getElementById('swipeCount');
     var cardsData = [];
     var currentCardIndex = 0;
     var swipeCount = 0;
@@ -154,6 +157,8 @@
       displayNextCard();
       swipeCountElement.textContent = 'Swipe count: ' + swipeCount + '/' + maxSwipes;
       if (swipeCount === maxSwipes || currentCardIndex >= cardsData.length) {
+        document.getElementById('swipeLeftButton').style.display = 'none';
+        document.getElementById('swipeRightButton').style.display = 'none';
         document.getElementById('resultsButton').style.display = 'block';
       }
     }
