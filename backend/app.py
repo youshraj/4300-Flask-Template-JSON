@@ -93,7 +93,17 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     common_words_list = [[] for _ in range(top_n)]
 
     partner_traits = user_preferences.get("partner_traits", [])
-    partner_traits = partner_traits.split(',')
+
+
+    if isinstance(partner_traits, str):
+        try:
+            partner_traits = partner_traits.split(',')
+        except ValueError: 
+            pass 
+
+
+
+    #partner_traits = partner_traits.split(',')
     common_words_list = []
 
     if partner_traits:
