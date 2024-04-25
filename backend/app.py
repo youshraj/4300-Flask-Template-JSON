@@ -197,7 +197,7 @@ def get_updated_matches():
 
 @app.route('/output')
 def output_page():
-    updated_query_global = session.get('updated_query_global', "None")
+    updated_query_global = session.get('updated_query_global', None)
     user_preferences = session.get('user_preferences', {})
     if updated_query_global:
         updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
