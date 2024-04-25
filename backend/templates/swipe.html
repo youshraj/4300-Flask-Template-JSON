@@ -65,6 +65,7 @@
       padding: 2px 16px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
 </head>
 
 <body>
@@ -72,11 +73,16 @@
     <div class="cards" id="cardsContainer">
     </div>
     <div class="buttons">
+      <img src="/static/images/dislike.png" alt="Dislike" class="button-image dislike-image">
       <button id="swipeLeftButton" onclick="swipeLeft()">Swipe Left</button>
       <button id="swipeRightButton" onclick="swipeRight()">Swipe Right</button>
+      <img src="/static/images/like.png" alt="Like" class="button-image like-image">
       <button id="resultsButton" onclick="submitSwipesAndCheckResults()">Get Your Results!</button>
     </div>
     <div id="swipeCount" class="swipe-count">Swipe count: 0</div>
+  </div>
+  <div class="progress-container">
+    <div id="progressBar" class="progress-bar"></div>
   </div>
 
   <script>
@@ -93,11 +99,24 @@
       let cardElement = document.createElement('div');
       cardElement.className = 'card';
       cardElement.innerHTML = `
-        <div class="container">
-          <h4><b>${cardData['Celebrity Name']}</b></h4>
-          <p>Profession: ${cardData.profession}</p>
-        </div>
-      `;
+    <img src="/static/images/dislike.png" class="swipe-indicator left" style="display:none;">
+    <div class="container">
+      <h4><b>${cardData['Celebrity Name']}</b></h4>
+      <p>Profession: ${cardData.profession}</p>
+    </div>
+    <img src="/static/images/like.png" class="swipe-indicator right" style="display:none;">
+  `;
+
+      let hammer = new Hammer(cardElement);
+      hammer.on('swipeleft', function () {
+        swipeLeft();
+        // showSwipeIndicator('left');
+      });
+      hammer.on('swiperight', function () {
+        swipeRight();
+        // showSwipeIndicator('right');
+      });
+
       return cardElement;
     }
 
@@ -121,6 +140,14 @@
         });
     }
 
+    function showSwipeIndicator(direction) {
+      const indicator = direction === 'left' ? 'left' : 'right';
+      const swipeIndicator = document.querySelector('.swipe-indicator.' + indicator);
+      swipeIndicator.style.display = 'block';
+      setTimeout(() => swipeIndicator.style.display = 'none', 500);
+    }
+
+
     function displayNextCard() {
       if (currentCardIndex < cardsData.length) {
         const cardData = cardsData[currentCardIndex];
@@ -131,7 +158,8 @@
     }
     function swipeLeft() {
       if (currentCardIndex < cardsData.length) {
-        let celebName = cardsData[currentCardIndex]['Celebrity Name']; // Use the celebrity's name as the identifier
+        // showSwipeIndicator('left');
+        let celebName = cardsData[currentCardIndex]['Celebrity Name'];
         let dislikes = JSON.parse(localStorage.getItem('dislikedCelebrities') || '[]');
         dislikes.push(celebName);
         localStorage.setItem('dislikedCelebrities', JSON.stringify(dislikes));
@@ -142,7 +170,8 @@
 
     function swipeRight() {
       if (currentCardIndex < cardsData.length) {
-        let celebName = cardsData[currentCardIndex]['Celebrity Name']; // Use the celebrity's name as the identifier
+        // showSwipeIndicator('right');
+        let celebName = cardsData[currentCardIndex]['Celebrity Name'];
         let likes = JSON.parse(localStorage.getItem('likedCelebrities') || '[]');
         likes.push(celebName);
         localStorage.setItem('likedCelebrities', JSON.stringify(likes));
@@ -151,14 +180,25 @@
       }
     }
 
+
+    function updateProgressBar() {
+      const progress = (currentCardIndex / cardsData.length) * 100;
+      document.getElementById('progressBar').style.width = progress + '%';
+    }
+
+
     function moveToNextCard() {
       currentCardIndex++;
       swipeCount++;
       displayNextCard();
       swipeCountElement.textContent = 'Swipe count: ' + swipeCount + '/' + maxSwipes;
+      updateProgressBar();
+
       if (swipeCount === maxSwipes || currentCardIndex >= cardsData.length) {
         document.getElementById('swipeLeftButton').style.display = 'none';
         document.getElementById('swipeRightButton').style.display = 'none';
+        document.querySelector('.like-image').style.display = 'none';
+        document.querySelector('.dislike-image').style.display = 'none';
         document.getElementById('resultsButton').style.display = 'block';
       }
     }
