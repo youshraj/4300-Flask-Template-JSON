@@ -1,7 +1,7 @@
 import json
 import os
 import csv
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
@@ -13,6 +13,7 @@ from rocchios import update_query_vector
 import urllib.parse
 from flask import jsonify
 import numpy as np
+import os
 from svd import svd
 
 # ROOT_PATH for linking with all your files. 
@@ -32,7 +33,9 @@ with open(json_file_path, 'r') as file:
 app = Flask(__name__)
 CORS(app)
 
-user_preferences = {}
+app.secret_key = b'e\x9e\xff`1\xc4\xa6H\x81\x0e\xf2\xc4\xbe\x93\xc5\x8a\x17\x13\xf4\xb8\x9bt\x19;'
+
+#user_preferences = {}
 current_query = ""
 updated_query_global = ""
 
@@ -45,7 +48,8 @@ def load_actors_database():
 actors_df = load_actors_database()
 
 def svd_search(actors_df, query, user_traits, top_n):
-    interest = user_preferences.get('interest', 'both')
+    user_preferences = session.get('user_preferences', {})
+    interest = user_preferences.get("interest", "both")
 
     if interest == 'men':
         filtered_df = actors_df[actors_df['gender'] == 'male']
@@ -59,7 +63,8 @@ def svd_search(actors_df, query, user_traits, top_n):
 
 
 def cosine_similarity_search(query, user_traits, top_n, output):
-    interest = user_preferences.get('interest', 'both')
+    user_preferences = session.get('user_preferences', {})
+    interest = user_preferences.get("interest", "both")
 
     if interest == 'men':
         filtered_df = actors_df[actors_df['gender'] == 'male']
@@ -100,8 +105,6 @@ def cosine_similarity_search(query, user_traits, top_n, output):
             partner_traits = partner_traits.split(',')
         except ValueError: 
             pass 
-
-
 
     #partner_traits = partner_traits.split(',')
     common_words_list = []
@@ -152,7 +155,7 @@ def profiles():
             })
     return jsonify(actors_data) 
 
-# Sample search using json with pandas
+# sample search using json with pandas
 def json_search(query):
     matches = []
     merged_df = pd.merge(episodes_df, reviews_df, left_on='id', right_on='id', how='inner')
@@ -167,13 +170,12 @@ def show_preferences_form():
 
 @app.route('/save_preferences', methods=['POST'])
 def save_preferences():
-    global user_preferences
     # extract prefs 
     interest = request.form['interest']
     user_traits = request.form['user_traits']
     partner_traits = request.form['partner_traits']
 
-    user_preferences = {
+    session['user_preferences'] = {
         'interest': interest,
         'user_traits': user_traits,
         'partner_traits': partner_traits
@@ -183,7 +185,8 @@ def save_preferences():
 
 @app.route("/")
 def home():
-    return render_template('base.html',title="home page", preferences=user_preferences)
+    preferences = session.get('user_preferences', None)
+    return render_template('base.html',title="home page", preferences=preferences)
 
 @app.route('/swipe')
 def swipe_page():
@@ -191,12 +194,14 @@ def swipe_page():
 
 @app.route('/get_updated_matches')
 def get_updated_matches():
+    user_preferences = session.get('user_preferences', {})
     updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
     return updated_matches
 
 @app.route('/output')
 def output_page():
     global updated_query_global
+    user_preferences = session.get('user_preferences', {})
     if updated_query_global:
         updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
         return render_template('output.html', matches=updated_matches)
@@ -208,10 +213,15 @@ def actors_search():
     global current_query
     query = request.args.get("query")
     current_query = query
-    if user_preferences:
-        return cosine_similarity_search(current_query, user_preferences["partner_traits"], 15, False)
+    user_preferences = session.get('user_preferences', {})
+
+    # get partner prefs
+    partner_traits = user_preferences.get("partner_traits", "")
+
+    if partner_traits:
+        return cosine_similarity_search(query, partner_traits, 15, False)
     else:
-        return cosine_similarity_search(current_query, "", 15, False)
+        return cosine_similarity_search(query, "", 15, False)
 
 @app.route("/get_profiles")
 def get_profiles():
