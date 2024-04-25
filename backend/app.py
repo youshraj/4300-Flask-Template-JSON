@@ -35,10 +35,6 @@ CORS(app)
 
 app.secret_key = b'e\x9e\xff`1\xc4\xa6H\x81\x0e\xf2\xc4\xbe\x93\xc5\x8a\x17\x13\xf4\xb8\x9bt\x19;'
 
-#user_preferences = {}
-current_query = ""
-updated_query_global = ""
-
 # Load actors database
 def load_actors_database():
     current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -195,12 +191,13 @@ def swipe_page():
 @app.route('/get_updated_matches')
 def get_updated_matches():
     user_preferences = session.get('user_preferences', {})
+    updated_query_global  = session.get('updated_query_global', "")
     updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
     return updated_matches
 
 @app.route('/output')
 def output_page():
-    global updated_query_global
+    updated_query_global = session.get('updated_query_global', "None")
     user_preferences = session.get('user_preferences', {})
     if updated_query_global:
         updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
@@ -210,9 +207,8 @@ def output_page():
     
 @app.route("/actors")
 def actors_search():
-    global current_query
     query = request.args.get("query")
-    current_query = query
+    session['current_query'] = query
     user_preferences = session.get('user_preferences', {})
 
     # get partner prefs
@@ -229,7 +225,7 @@ def get_profiles():
 
 @app.route('/swipe', methods=['POST'])
 def handle_swipe():
-    global current_query, updated_query_global
+    current_query = session.get('current_query', None)
     data = request.get_json()
     liked_names = data.get('likes', []) 
     disliked_names = data.get('dislikes', [])
@@ -237,8 +233,8 @@ def handle_swipe():
 
     updated_query = update_query_vector(current_query, liked_names, disliked_names, celeb_df)
 
-    current_query = updated_query
-    updated_query_global = updated_query
+    session['current_query'] = updated_query
+    session['updated_query_global'] = updated_query
 
     return jsonify({"message": "Query vector updated successfully", "updated_query": updated_query})
 
