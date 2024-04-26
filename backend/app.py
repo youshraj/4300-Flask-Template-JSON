@@ -78,13 +78,14 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     top_indices = similarity_scores.flatten().argsort()[-top_n:][::-1] 
 
     top_matches = filtered_df.iloc[top_indices]
+    desired_popularity = user_preferences.get("popularity_num", None)
 
     if not output:
         top_matches['reasoning'] = ""
         top_matches['match_score'] = 0
     else:
         top_matches['match_score'] = top_matches.apply(
-            lambda row: calculate_match_score(user_traits, row['Character Traits']),
+            lambda row: calculate_match_score(user_traits, row['Character Traits'], row['Interest Score'], desired_popularity),
             axis=1
         )
         top_matches['reasoning'] = top_matches.apply(
@@ -170,11 +171,13 @@ def save_preferences():
     interest = request.form['interest']
     user_traits = request.form['user_traits']
     partner_traits = request.form['partner_traits']
+    popularity_num = request.form['popularity_num']
 
     session['user_preferences'] = {
         'interest': interest,
         'user_traits': user_traits,
-        'partner_traits': partner_traits
+        'partner_traits': partner_traits,
+        'popularity_num': int(popularity_num)
     }
 
     return redirect(url_for('home'))  
