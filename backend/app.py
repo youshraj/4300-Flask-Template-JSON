@@ -78,7 +78,7 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     top_indices = similarity_scores.flatten().argsort()[-top_n:][::-1] 
 
     top_matches = filtered_df.iloc[top_indices]
-    desired_popularity = user_preferences.get("popularity_num", None)
+    desired_popularity = user_preferences.get("popularity_level", None)
 
     if not output:
         top_matches['reasoning'] = ""
@@ -171,13 +171,13 @@ def save_preferences():
     interest = request.form['interest']
     user_traits = request.form['user_traits']
     partner_traits = request.form['partner_traits']
-    popularity_num = request.form['popularity_num']
+    popularity_level = request.form['popularity_level']
 
     session['user_preferences'] = {
         'interest': interest,
         'user_traits': user_traits,
         'partner_traits': partner_traits,
-        'popularity_num': int(popularity_num)
+        'popularity_level': popularity_level
     }
 
     return redirect(url_for('home'))  
