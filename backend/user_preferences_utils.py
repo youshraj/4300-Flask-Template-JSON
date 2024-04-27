@@ -16,8 +16,8 @@ def calculate_sentiment_score(traits):
 def calculate_match_score(partner_traits, celeb_traits, celeb_pop, desired_pop):
     if partner_traits == "" or celeb_traits == "":
         return 0.0  
-    #partner_traits = [trait.strip() for trait in partner_traits.split(',')]
-    #celeb_traits = [trait.strip() for trait in celeb_traits.split(',')]
+    partner_traits = [trait.strip() for trait in partner_traits.split(',')]
+    celeb_traits = [trait.strip() for trait in celeb_traits.split(',')]
     
     # Calculate sentiment scores for partner and celebrity traits
     partner_sentiment_scores = calculate_sentiment_score(partner_traits)
