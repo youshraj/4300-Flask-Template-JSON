@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swipe Cards</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link
+  href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+  rel="stylesheet"
+  />
   <style>
     .tinder {
       display: flex;
@@ -83,6 +87,19 @@
   </div>
   <div class="progress-container">
     <div id="progressBar" class="progress-bar"></div>
+  </div>
+  <div class = "about">
+    <div class="how-it-works">
+      <h2>Explanation</h2>
+      <p>
+          We will now refine your celebrity search. You can swipe left/right with the buttons or the left/right arrow.
+          <ol>
+              <li>Swipe Left: you do not like this profession match</li>
+              <li>Swipe Right: you do like this profession match</li>
+              <li>No images included because we want you to judge the quality of the profession match, not physical traits.</li>
+          </ol>
+      </p>
+    </div>
   </div>
 
   <script>
