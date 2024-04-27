@@ -49,9 +49,10 @@ def match_with_popularity(match_score, celeb_popularity, desired_popularity):
 
 
 
-partner_traits = ["kind", "funny", "loving"]
+'''partner_traits = ["kind", "funny", "loving"]
 celeb_traits = ["compassionate", "charismatic", "intelligent"]
 
 score = calculate_match_score(partner_traits, celeb_traits, 70, 65)
 adj_score = match_with_popularity(score, 70, 75)
 print(adj_score)
+'''
