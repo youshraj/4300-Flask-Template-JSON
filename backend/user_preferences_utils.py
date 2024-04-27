@@ -1,40 +1,19 @@
 from sentence_transformers import SentenceTransformer, util
+import pandas as pd
 import math
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-from nltk.sentiment import SentimentIntensityAnalyzer
-import nltk
-nltk.download("vader_lexicon")
 
-sia = SentimentIntensityAnalyzer()
-
-def calculate_sentiment_score(traits):
-    # Calculate sentiment score for each trait
-    sentiment_scores = [sia.polarity_scores(trait)['compound'] for trait in traits]
-    return sentiment_scores
+model = SentenceTransformer('bert-base-nli-mean-tokens')
 
 def calculate_match_score(partner_traits, celeb_traits, celeb_pop, desired_pop):
-    if partner_traits == "" or celeb_traits == "":
-        return 0.0  
-    partner_traits = [trait.strip() for trait in partner_traits.split(',')]
-    celeb_traits = [trait.strip() for trait in celeb_traits.split(',')]
-    
-    # Calculate sentiment scores for partner and celebrity traits
-    partner_sentiment_scores = calculate_sentiment_score(partner_traits)
-    celeb_sentiment_scores = calculate_sentiment_score(celeb_traits)
-    
-    # Pad the shorter vector with zeros to match the length of the longer vector
-    max_length = max(len(partner_sentiment_scores), len(celeb_sentiment_scores))
-    partner_sentiment_scores += [0] * (max_length - len(partner_sentiment_scores))
-    celeb_sentiment_scores += [0] * (max_length - len(celeb_sentiment_scores))
-    
-    # Calculate cosine similarity between sentiment scores
-    score = cosine_similarity([partner_sentiment_scores], [celeb_sentiment_scores])
-
-    print(partner_traits, celeb_traits)
-    print(score[0][0])
-    score_updated_popularity = match_with_popularity(score[0][0], celeb_pop, desired_pop)
-    return score_updated_popularity 
+     if partner_traits == "" or celeb_traits == "":
+         return 0.0  
+     user_embedding = model.encode(partner_traits, convert_to_tensor=True)
+     celeb_embedding = model.encode(celeb_traits, convert_to_tensor=True)
+     score = util.pytorch_cos_sim(user_embedding, celeb_embedding)
+     print(partner_traits, celeb_traits)
+     print(score)
+     score_updated_popularity = match_with_popularity(score[0][0].item(), celeb_pop, desired_pop)
+     return score_updated_popularity 
 
 def match_with_popularity(match_score, celeb_popularity, desired_popularity):
     if desired_popularity is None:
@@ -70,9 +49,9 @@ def match_with_popularity(match_score, celeb_popularity, desired_popularity):
 
 
 
-'''partner_traits = ["kind", "funny", "loving"]
+partner_traits = ["kind", "funny", "loving"]
 celeb_traits = ["compassionate", "charismatic", "intelligent"]
 
 score = calculate_match_score(partner_traits, celeb_traits, 70, 65)
 adj_score = match_with_popularity(score, 70, 75)
-print(adj_score)'''
+print(adj_score)
