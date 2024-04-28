@@ -1,40 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>ChronoMingle</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-<head>
-  <title>ChronoMingle</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
-    rel="stylesheet" />
-</head>
-
-<body>
-  <div class="full-body-container">
-    <div class="logo-container">
-      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" />
+  <body>
+    <div class="full-body-container">
+      <div class="logo-container">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Logo"
+        />
+      </div>
+      <div id="card-container" class="card-container"></div>
+      <div>
+        <a href="/"><button class="preferences-button">Back To Home</button></a>
+      </div>
     </div>
-    <div id="card-container" class="card-container"></div>
-    <div>
-      <a href="/"><button class="preferences-button">Back To Home</button></a>
-    </div>
-  </div>
 
-  <script>
-    function cardTemplate(
-      name,
-      description,
-      imageUrl,
-      gender,
-      profession,
-      trendsScore,
-      reasoning,
-      score,
-      matchScore,
-      common_words
-    ) {
-      return `
+    <script>
+      function cardTemplate(
+        name,
+        imageUrl,
+        gender,
+        profession,
+        trendsScore,
+        reasoning,
+        score,
+        matchScore,
+        common_words
+      ) {
+        return `
       <div class='card'>
         <img class="card-img" src="${imageUrl}" alt="Image of ${name}">
         <div class="card-content">
@@ -42,48 +48,40 @@
           <p class='title'><b>Gender:</b></p><p class='card-text'>${gender}</p>
           <p class='title'><b>Profession:</b></p> <p class='card-text'>${profession}</p>
           <p class='title'><b>Popularity Score:</b></p> <p class='card-text'>${trendsScore}</p>
-          <p class='card-desc'>${description}</p>
           <p class='title'><b>Reasoning:</b></p> <p class='card-text'>${reasoning}</p>
           <p class='title'><b>Match Score:</b></p> <p class='card-text'>Your query matched ${name}'s profession with an accuracy of ${score}. Also, based on your preferred partner traits and ${name}'s traits, you guys have ${matchScore} in similarity</p>
           <a href="${imageUrl}" target="_blank" rel="noopener noreferrer" class='title'><b>Image Source</b></a> <p class='card-text'></p>
           </div>
         </div>
         `;
-    }
-    function renderCards() {
-      const data = localStorage.getItem("data");
-      if (data) {
-        const output = JSON.parse(data);
-        const cardContainer = document.getElementById("card-container");
-        const sortedOutput = output.slice();
-        sortedOutput.sort(
-          (a, b) => b["match_score"] - a["match_score"]
-        );
-        sortedOutput.forEach((row) => {
-          let firstSentenceRegex = /^.*?[.!?](?=\s|$)/;
-          let firstSentence =
-            row["Wikipedia Summary"].match(firstSentenceRegex)[0];
-          const cardHTML = cardTemplate(
-            row["Celebrity Name"],
-            firstSentence,
-            row["Image URL"],
-            row["gender"],
-            row["profession"],
-            row["Interest Score"],
-            row["reasoning"],
-            row["score"],
-            row["match_score"],
-            row["common_words"]
-          );
-          cardContainer.innerHTML += cardHTML;
-        });
-      } else {
-        document.getElementById("card-container").innerHTML =
-          "<p>No results to display.</p>";
       }
-    }
-    window.addEventListener("load", renderCards);
-  </script>
-</body>
-
+      function renderCards() {
+        const data = localStorage.getItem("data");
+        if (data) {
+          const output = JSON.parse(data);
+          const cardContainer = document.getElementById("card-container");
+          const sortedOutput = output.slice();
+          sortedOutput.sort((a, b) => b["match_score"] - a["match_score"]);
+          sortedOutput.forEach((row) => {
+            const cardHTML = cardTemplate(
+              row["Celebrity Name"],
+              row["Image URL"],
+              row["gender"],
+              row["profession"],
+              row["Interest Score"],
+              row["reasoning"],
+              row["score"],
+              row["match_score"],
+              row["common_words"]
+            );
+            cardContainer.innerHTML += cardHTML;
+          });
+        } else {
+          document.getElementById("card-container").innerHTML =
+            "<p>No results to display.</p>";
+        }
+      }
+      window.addEventListener("load", renderCards);
+    </script>
+  </body>
 </html>
