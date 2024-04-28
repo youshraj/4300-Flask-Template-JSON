@@ -83,8 +83,9 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     if not output:
         top_matches['reasoning'] = ""
         top_matches['match_score'] = 0
+        top_matches['score'] = 0
     else:
-        # Since we reset the index, we can safely use the new index
+        # Since we reset the index, we can  use the new index
         top_matches['match_score'] = top_matches.apply(
             lambda row: calculate_match_score(user_traits, row['Character Traits'], row['Interest Score'], desired_popularity),
             axis=1
@@ -93,10 +94,9 @@ def cosine_similarity_search(query, user_traits, top_n, output):
             lambda row: calculate_reasoning(user_traits, row['Character Traits'], row['Celebrity Name']) if row['Character Traits'] and user_traits else "Missing traits information",
             axis=1
         )
+        top_matches['score'] = similarity_scores[top_indices].flatten()
 
     return jsonify(top_matches.to_dict(orient='records'))
-
-
 
 
 # get profiles for swiping
@@ -112,7 +112,7 @@ def profiles():
                 'Image': row['Image URL'],
                 'gender': row['gender'],
                 'profession': row['profession'],
-                'character Traits': row['Character Traits']
+                'character Traits': row['Character Traits'],
             })
     return jsonify(actors_data) 
 
@@ -133,7 +133,7 @@ def show_preferences_form():
 def save_preferences():
     # extract prefs 
     interest = request.form['interest']
-    user_traits = request.form['user_traits']
+    user_traits = ""
     partner_traits = request.form['partner_traits']
     popularity_level = request.form['popularity_level']
 

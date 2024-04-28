@@ -30,6 +30,7 @@
       profession,
       trendsScore,
       reasoning,
+      score,
       matchScore,
       common_words
     ) {
@@ -43,7 +44,7 @@
           <p class='title'><b>Popularity Score:</b></p> <p class='card-text'>${trendsScore}</p>
           <p class='card-desc'>${description}</p>
           <p class='title'><b>Reasoning:</b></p> <p class='card-text'>${reasoning}</p>
-          <p class='title'><b>Match Score:</b></p> <p class='card-text'>${matchScore}</p>
+          <p class='title'><b>Match Score:</b></p> <p class='card-text'>Your query matched ${name}'s profession with an accuracy of ${score}. Also, based on your preferred partner traits and ${name}'s traits, you guys have ${matchScore} in similarity</p>
           <a href="${imageUrl}" target="_blank" rel="noopener noreferrer" class='title'><b>Image Source</b></a> <p class='card-text'></p>
           </div>
         </div>
@@ -70,6 +71,7 @@
             row["profession"],
             row["Interest Score"],
             row["reasoning"],
+            row["score"],
             row["match_score"],
             row["common_words"]
           );
