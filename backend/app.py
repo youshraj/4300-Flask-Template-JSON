@@ -178,7 +178,7 @@ def get_updated_matches():
 
     # I just realized also that the reasoning and score generation is tied to cosine sim search,
     # so you can't just run it twice heads up
-    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True, updated_query2_global, split)
+    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 3, True, updated_query2_global, split)
     return updated_matches
 
 @app.route('/output')
@@ -190,7 +190,7 @@ def output_page():
 
     if updated_query_global:
         # Bigdelle edit here: another cosine
-        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True, updated_query2_global, split)
+        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 3, True, updated_query2_global, split)
         return render_template('output.html', matches=updated_matches)
     else:
         return "No updated query available."
