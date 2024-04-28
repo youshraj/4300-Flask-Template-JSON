@@ -76,12 +76,21 @@
           const sortedOutput = output.slice();
           sortedOutput.sort((a, b) => b["match_score"] - a["match_score"]);
           sortedOutput.forEach((row) => {
+            popScore = parseInt(row["Interest Score"])
+            if (popScore < 20) {
+              popScore = "Low Popularity"
+            } else if (popScore < 55) {
+              popScore = "Medium Popularity"
+            } else {
+              popScore = "High Popularity"
+            }
+
             const cardHTML = cardTemplate(
               row["Celebrity Name"],
               row["Image URL"],
               row["gender"],
               row["profession"],
-              row["Interest Score"],
+              popScore,
               row["reasoning"],
               row["score"],
               row["match_score"],
