@@ -81,6 +81,10 @@
       <img src="/static/images/like.png" alt="Like" class="button-image like-image">
       <button id="resultsButton" onclick="submitSwipesAndCheckResults()">Get Your Results!</button>
     </div>
+    <div id="loadingMessage" style="display:none; font-size:16px; color: purple; margin-top:10px;"></div>
+    <div class="progress-container" style="width: 100%; background-color: #ddd; display: none;">
+      <div id="progressBar" class="progress-bar" style="height: 30px; background-color: #DAB0FF; width: 0%;"></div>
+    </div>
     <div id="swipeCount" class="swipe-count">Swipe count: 0</div>
   </div>
   <div class="progress-container">
@@ -103,6 +107,10 @@
 
   <script>
     'use strict';
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('progressBar').style.width = '0%';
+    });
+
 
     var cardsContainer = document.getElementById('cardsContainer');
     var swipeCountElement = document.getElementById('swipeCount');
@@ -197,6 +205,55 @@
       }
     }
 
+    function getRandomLoadingMessage() {
+      const messages = [
+        "Finding the perfect match for you...",
+        "Matchmaking in progress...",
+        "Just a moment, love is in the air...",
+        "Cooking up some matches...",
+        "Dialing Cupid...",
+        "Summoning your soulmates...",
+        "Looking for that special someone...",
+        "Love is just a swipe away...",
+        "Consulting with Cupid...",
+        "Running the romance algorithm...",
+        "Calculating compatibility...",
+        "Scouring the globe for your match...",
+        "Harnessing the power of love...",
+        "Be patient, perfection takes time...",
+        "Searching for your happily ever after...",
+        "Magically matchmaking...",
+        "Brewing the best bonds...",
+        "Summoning smiles...",
+        "Tuning the heartstrings...",
+        "Chasing romantic tales...",
+        "Spinning the love spinner...",
+        "Weaving your romantic web...",
+        "Planting seeds of love...",
+        "Conjuring connections...",
+        "Preparing the love potion...",
+        "Unleashing the love lasso...",
+        "Loading lovely moments...",
+        "Fetching fateful encounters...",
+        "Unlocking hearts...",
+        "Sifting through Cupid's arrows...",
+        "Activating affection...",
+        "Engaging the charm circuit...",
+        "Filtering the finest...",
+        "Picking petals of possibility...",
+        "Ringing the romance bell...",
+        "Gathering the stars...",
+        "Navigating through nuances...",
+        "Piloting your passion...",
+        "Charting the chemistry...",
+        "Linking the love links..."
+      ];
+      const date = new Date();
+      const seed = date.getSeconds() + date.getMilliseconds();
+      messages.sort(() => Math.random() - 0.5 + seed % 100 / 10000);
+
+      return messages[0];
+    }
 
     function updateProgressBar() {
       const progress = (currentCardIndex / cardsData.length) * 100;
@@ -221,6 +278,26 @@
     }
 
     function submitSwipesAndCheckResults() {
+      let currentProgress = 0;
+      const totalSteps = 3; // Number of steps in the fetch process
+      const increment = 100 / totalSteps; // Increment for each completed step
+
+      const progressBar = document.getElementById('progressBar');
+      const loadingMessageElement = document.getElementById('loadingMessage');
+
+      document.querySelector('.progress-container').style.display = 'block';
+      loadingMessageElement.style.display = 'block';
+      loadingMessageElement.textContent = getRandomLoadingMessage(); // Use the random message function
+
+      const messageInterval = setInterval(() => {
+        loadingMessageElement.textContent = getRandomLoadingMessage(); // Update with a new random message
+      }, 3000);
+
+      function updateProgressBar() {
+        currentProgress += increment;
+        progressBar.style.width = `${currentProgress}%`;
+      }
+
       const postData = {
         likes: JSON.parse(localStorage.getItem('likedCelebrities') || '[]'),
         dislikes: JSON.parse(localStorage.getItem('dislikedCelebrities') || '[]'),
@@ -235,22 +312,32 @@
           if (!response.ok) {
             throw new Error('Failed to submit swipes');
           }
+          updateProgressBar(); // Update progress after swipes are submitted
           return fetch('/get_updated_matches');
         })
         .then(response => {
           if (!response.ok) {
             throw new Error('Failed to fetch updated matches');
           }
+          updateProgressBar(); // Update progress after fetching matches
           return response.json();
         })
         .then(updatedMatches => {
+          updateProgressBar(); // Update to complete the progress bar
+          clearInterval(messageInterval); // Stop changing messages
           localStorage.setItem('data', JSON.stringify(updatedMatches));
           localStorage.removeItem('likedCelebrities');
           localStorage.removeItem('dislikedCelebrities');
           window.location.href = '/output';
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+          console.error('Error:', error);
+          document.querySelector('.progress-container').style.display = 'none';
+          loadingMessageElement.style.display = 'none';
+        });
     }
+
+
 
     function sendSwipeRequest(direction) {
       // Send AJAX request to the server
