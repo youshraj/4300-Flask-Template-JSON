@@ -30,15 +30,33 @@ def calculate_reasoning(partner_traits, celeb_traits, celeb_name):
     if len(partner_traits_list) < 2 or len(celeb_traits_list) < 2:
         return "This celebrity's traits are very similar to those you prefer!"
     
-    p1 = random.sample(partner_traits_list,1)[0]
-    p2 = random.sample(partner_traits_list,1)[0]
-    while p1 == p2:
-        p2 = random.sample(partner_traits_list,1)[0]
+    scores = []
+    pairs = []
+    for _ in partner_traits_list:
+        scores.append(0)
+        pairs.append(0)
     
-    c1 = random.sample(celeb_traits_list,1)[0]
-    c2 = random.sample(celeb_traits_list,1)[0]
-    while c1 == c2:
-        c2 = random.sample(celeb_traits_list,1)[0]
+    for (i,p) in enumerate(partner_traits_list):
+        for (j,c) in enumerate(celeb_traits_list):
+            user_embedding = model.encode(p, convert_to_tensor=True)
+            celeb_embedding = model.encode(c, convert_to_tensor=True)
+            score = float(util.pytorch_cos_sim(user_embedding, celeb_embedding))
+            if score > scores[i]:
+                scores[i] = score
+                pairs[i] = j
+    
+    max_score = max(scores)
+    max_index = scores.index(max_score)
+
+    scores[max_index] = 0
+    max_score2 = max(scores)
+    max_index2 = scores.index(max_score2)
+
+    p1 = partner_traits_list[max_index]
+    p2 = partner_traits_list[max_index2]
+
+    c1 = celeb_traits_list[pairs[max_index]]
+    c2 = celeb_traits_list[pairs[max_index2]]
     
     
 
@@ -50,7 +68,7 @@ def calculate_reasoning(partner_traits, celeb_traits, celeb_name):
     celeb_embedding = model.encode(c2, convert_to_tensor=True)
     score2 = float(util.pytorch_cos_sim(user_embedding, celeb_embedding))
     
-    avg = float((score1 + score2) / 2.0)
+    avg =(score1 + score2) / 2
 
     if avg > 0.75:
         reasoning_message = "You guys would be a great match!"
@@ -58,6 +76,10 @@ def calculate_reasoning(partner_traits, celeb_traits, celeb_name):
         reasoning_message = "I sense some chemistry!"
     else:
         reasoning_message = "It seems like this could go somewhere..."
+
+    if c1 == c2 or max_score2 == 0:
+         return ((f"You wanted someone {p1}, and {celeb_name} is described as {c1}. "
+                        f"{reasoning_message}"))
 
     response_message = (f"You wanted someone {p1} and {p2}, and {celeb_name} is described as {c1} and {c2}. "
                         f"{reasoning_message}")
