@@ -8,7 +8,7 @@ import pandas as pd
 import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from user_preferences_utils import calculate_match_score
+from user_preferences_utils import calculate_match_score, calculate_reasoning
 from rocchios import update_query_vector
 import urllib.parse
 from flask import jsonify
@@ -67,73 +67,37 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     elif interest == 'women':
         filtered_df = actors_df[actors_df['gender'] == 'female']
     else:
-        filtered_df = actors_df  
-    # vectorize  data
+        filtered_df = actors_df
+
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(filtered_df['profession'])
-
     query_vector = tfidf_vectorizer.transform([query])
     similarity_scores = cosine_similarity(tfidf_matrix, query_vector)
+    top_indices = similarity_scores.flatten().argsort()[-top_n:][::-1]
+    
+    # Slice and immediately reset the index to align it correctly
+    top_matches = filtered_df.iloc[top_indices].copy().reset_index(drop=True)
 
-    top_indices = similarity_scores.flatten().argsort()[-top_n:][::-1] 
-
-    top_matches = filtered_df.iloc[top_indices]
     desired_popularity = user_preferences.get("popularity_level", None)
 
     if not output:
         top_matches['reasoning'] = ""
         top_matches['match_score'] = 0
     else:
+        # Since we reset the index, we can safely use the new index
         top_matches['match_score'] = top_matches.apply(
             lambda row: calculate_match_score(user_traits, row['Character Traits'], row['Interest Score'], desired_popularity),
             axis=1
         )
         top_matches['reasoning'] = top_matches.apply(
-            lambda row: f"You are interested in {user_traits} and this celebrity is described as {row['Character Traits']}.", axis=1
+            lambda row: calculate_reasoning(user_traits, row['Character Traits'], row['Celebrity Name']) if row['Character Traits'] and user_traits else "Missing traits information",
+            axis=1
         )
-    
-    common_words_list = [[] for _ in range(top_n)]
 
-    partner_traits = user_preferences.get("partner_traits", [])
-
-
-    if isinstance(partner_traits, str):
-        try:
-            partner_traits = partner_traits.split(',')
-        except ValueError: 
-            pass 
-
-    #partner_traits = partner_traits.split(',')
-    common_words_list = []
-
-    if partner_traits:
-        for summary in top_matches['Character Traits']:
-            common_words_for_summary = set() 
-            clean_summary = summary.strip().rstrip(',').rstrip('.').lower()
-            word_list = clean_summary.split(',')
-            cleaned_words = [word.strip() for word in word_list]
-            summary_words = set(cleaned_words)
-
-            
-            for trait in partner_traits:
-                trait_words = set(trait.lower().split()) 
-                common_words = summary_words.intersection(trait_words)
-                
-                if common_words:
-                    common_words_for_summary.update(common_words)
-            
-            if common_words_for_summary:
-                common_words_list.append(list(common_words_for_summary))
-            else:
-                common_words_list.append(['None']) 
-
-        top_matches['common_words'] = common_words_list
-    else:
-        top_matches['common_words'] = [['None'] for _ in range(len(top_matches))]
-
-    selected_columns = ['Celebrity Name', 'Wikipedia Summary', 'Image URL', 'gender', 'profession', 'reasoning', 'match_score', 'common_words', 'Interest Score']
-    top_matches = top_matches[selected_columns]
     return jsonify(top_matches.to_dict(orient='records'))
+
+
+
 
 # get profiles for swiping
 def profiles():
