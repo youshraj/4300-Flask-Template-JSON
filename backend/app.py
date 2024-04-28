@@ -9,7 +9,7 @@ import Levenshtein as lev
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from user_preferences_utils import calculate_match_score, calculate_reasoning
-from rocchios import update_query_vector
+from rocchios import update_query_vector, update_query2_vector
 import urllib.parse
 from flask import jsonify
 import numpy as np
@@ -60,7 +60,6 @@ def svd_search(actors_df, query, user_traits, top_n):
 
 def cosine_similarity_search(query, user_traits, top_n, output):
     user_preferences = session.get('user_preferences', {})
-    print(query)
     interest = user_preferences.get("interest", "both")
 
     if interest == 'men':
@@ -145,6 +144,8 @@ def save_preferences():
         'popularity_level': popularity_level
     }
 
+    session['current_query2'] = partner_traits
+    
     return redirect(url_for('home'))  
 
 @app.route("/")
@@ -160,14 +161,24 @@ def swipe_page():
 def get_updated_matches():
     user_preferences = session.get('user_preferences', {})
     updated_query_global  = session.get('updated_query_global', "")
+    updated_query2_global = session.get('updated_query2_global',"")
+
+    # Bigdelle edit here - you have both queries do the double cosine search and weight results
+    # Should use user_preferences.get("user_traits") and updated_query2
+
+    # I just realized also that the reasoning and score generation is tied to cosine sim search,
+    # so you can't just run it twice heads up
     updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
     return updated_matches
 
 @app.route('/output')
 def output_page():
     updated_query_global = session.get('updated_query_global', None)
+    updated_query2_global = session.get('updated_query2_global',None)
     user_preferences = session.get('user_preferences', {})
+
     if updated_query_global:
+        # Bigdelle edit here: another cosine
         updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
         return render_template('output.html', matches=updated_matches)
     else:
@@ -194,16 +205,26 @@ def get_profiles():
 @app.route('/swipe', methods=['POST'])
 def handle_swipe():
     current_query = session.get('current_query', None)
+    current_query2 = session.get('current_query2',None)
     data = request.get_json()
     liked_names = data.get('likes', []) 
     disliked_names = data.get('dislikes', [])
     celeb_df = load_actors_database()
 
+# Rocchios
+
     updated_query = update_query_vector(current_query, liked_names, disliked_names, celeb_df)
+    updated_query2 = update_query2_vector(current_query2, liked_names, disliked_names, celeb_df)
 
     session['current_query'] = updated_query
     session['updated_query_global'] = updated_query
 
+    session['current_query2'] = updated_query2
+    session['updated_query2_global'] = updated_query2
+
+
+# @Bigdelle
+# Does this return message get used? do we need to modify it to include updated_query2?
     return jsonify({"message": "Query vector updated successfully", "updated_query": updated_query})
 
 
