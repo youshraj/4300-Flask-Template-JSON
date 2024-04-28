@@ -60,6 +60,7 @@ def svd_search(actors_df, query, user_traits, top_n):
 
 def cosine_similarity_search(query, user_traits, top_n, output):
     user_preferences = session.get('user_preferences', {})
+    print(query)
     interest = user_preferences.get("interest", "both")
 
     if interest == 'men':
