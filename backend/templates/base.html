@@ -64,24 +64,33 @@
     </div>
   </div>
   
-
+  <input type="hidden" id="preferenceStatus" value="{% if preferences %}set{% else %}not set{% endif %}" />
 
   <script>
     function sendFocus() {
       document.getElementById("filter-text-val").focus();
     }
-
+  
     function filterText() {
-      const query = document.getElementById("filter-text-val").value;
-      localStorage.setItem("query", query);
-
-      fetch("/actors?" + new URLSearchParams({ query: query }).toString())
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          localStorage.setItem("data", JSON.stringify(data));
-          window.location.href = "/swipe";
-        });
+      // Retrieve the preference status from the hidden input
+      const preferenceStatus = document.getElementById("preferenceStatus").value;
+  
+      if (preferenceStatus !== "set") {
+        // Alert the user if preferences are not set
+        alert('Please set your preferences before you start swiping.');
+        // Redirect the user to the preferences page
+        window.location.href = '/preferences';
+      } else {
+        const query = document.getElementById("filter-text-val").value;
+        localStorage.setItem("query", query);
+  
+        fetch("/actors?" + new URLSearchParams({ query: query }).toString())
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            localStorage.setItem("data", JSON.stringify(data));
+            window.location.href = "/swipe";
+          });
+      }
     }
-  </script>
-</body>
+  </script></body>

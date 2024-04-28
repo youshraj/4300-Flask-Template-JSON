@@ -58,10 +58,11 @@ def svd_search(actors_df, query, user_traits, top_n):
     return svd(filtered_df, query, top_n)
 
 
-def cosine_similarity_search(query, user_traits, top_n, output):
+def cosine_similarity_search(query, partner_traits, top_n, output, pref_query="", split=0.5):
     user_preferences = session.get('user_preferences', {})
     interest = user_preferences.get("interest", "both")
 
+    # filter dataset
     if interest == 'men':
         filtered_df = actors_df[actors_df['gender'] == 'male']
     elif interest == 'women':
@@ -73,9 +74,17 @@ def cosine_similarity_search(query, user_traits, top_n, output):
     tfidf_matrix = tfidf_vectorizer.fit_transform(filtered_df['profession'])
     query_vector = tfidf_vectorizer.transform([query])
     similarity_scores = cosine_similarity(tfidf_matrix, query_vector)
-    top_indices = similarity_scores.flatten().argsort()[-top_n:][::-1]
-    
-    # Slice and immediately reset the index to align it correctly
+
+    if pref_query:
+        pref_query_vector = tfidf_vectorizer.transform([pref_query])
+        pref_similarity_scores = cosine_similarity(tfidf_matrix, pref_query_vector)
+    else:
+        pref_similarity_scores = similarity_scores  #  main query scores if no pref query
+
+    #combine scores
+    final_scores = split * similarity_scores + (1 - split) * pref_similarity_scores
+    top_indices = final_scores.flatten().argsort()[-top_n:][::-1]
+
     top_matches = filtered_df.iloc[top_indices].copy().reset_index(drop=True)
 
     desired_popularity = user_preferences.get("popularity_level", None)
@@ -85,19 +94,17 @@ def cosine_similarity_search(query, user_traits, top_n, output):
         top_matches['match_score'] = 0
         top_matches['score'] = 0
     else:
-        # Since we reset the index, we can  use the new index
         top_matches['match_score'] = top_matches.apply(
-            lambda row: calculate_match_score(user_traits, row['Character Traits'], row['Interest Score'], desired_popularity),
+            lambda row: calculate_match_score(partner_traits, row['Character Traits'], row['Interest Score'], desired_popularity),
             axis=1
         )
         top_matches['reasoning'] = top_matches.apply(
-            lambda row: calculate_reasoning(user_traits, row['Character Traits'], row['Celebrity Name']) if row['Character Traits'] and user_traits else "Missing traits information",
+            lambda row: calculate_reasoning(partner_traits, row['Character Traits'], row['Celebrity Name']) if row['Character Traits'] and partner_traits else "Missing traits information",
             axis=1
         )
-        top_matches['score'] = similarity_scores[top_indices].flatten()
+        top_matches['score'] = final_scores[top_indices].flatten()
 
     return jsonify(top_matches.to_dict(orient='records'))
-
 
 # get profiles for swiping
 def profiles():
@@ -136,6 +143,8 @@ def save_preferences():
     user_traits = ""
     partner_traits = request.form['partner_traits']
     popularity_level = request.form['popularity_level']
+    split = float(request.form['preference_split'])
+    split = (split + 1)/2
 
     session['user_preferences'] = {
         'interest': interest,
@@ -143,6 +152,7 @@ def save_preferences():
         'partner_traits': partner_traits,
         'popularity_level': popularity_level
     }
+    session['split'] = split
 
     session['current_query2'] = partner_traits
     
@@ -162,13 +172,13 @@ def get_updated_matches():
     user_preferences = session.get('user_preferences', {})
     updated_query_global  = session.get('updated_query_global', "")
     updated_query2_global = session.get('updated_query2_global',"")
-
+    split = session.get('split', 0.5)
     # Bigdelle edit here - you have both queries do the double cosine search and weight results
     # Should use user_preferences.get("user_traits") and updated_query2
 
     # I just realized also that the reasoning and score generation is tied to cosine sim search,
     # so you can't just run it twice heads up
-    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
+    updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True, updated_query2_global, split)
     return updated_matches
 
 @app.route('/output')
@@ -176,10 +186,11 @@ def output_page():
     updated_query_global = session.get('updated_query_global', None)
     updated_query2_global = session.get('updated_query2_global',None)
     user_preferences = session.get('user_preferences', {})
+    split = session.get('split', 0.5)
 
     if updated_query_global:
         # Bigdelle edit here: another cosine
-        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True)
+        updated_matches = cosine_similarity_search(updated_query_global, user_preferences.get("partner_traits", []), 5, True, updated_query2_global, split)
         return render_template('output.html', matches=updated_matches)
     else:
         return "No updated query available."
@@ -189,14 +200,15 @@ def actors_search():
     query = request.args.get("query")
     session['current_query'] = query
     user_preferences = session.get('user_preferences', {})
+    split = session.get('split', 0.5)
 
     # get partner prefs
     partner_traits = user_preferences.get("partner_traits", "")
 
     if partner_traits:
-        return cosine_similarity_search(query, partner_traits, 15, False)
+        return cosine_similarity_search(query, partner_traits, 15, False, partner_traits, split)
     else:
-        return cosine_similarity_search(query, "", 15, False)
+        return cosine_similarity_search(query, "", 15, False, partner_traits, split)
 
 @app.route("/get_profiles")
 def get_profiles():
